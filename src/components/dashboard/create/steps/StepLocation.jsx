@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Field, StepHeading, StepActions, stepMotion } from '../ui';
-import { getMapEmbedUrl, getNavigationUrl, normalizeVenueData } from '../../../../lib/mapService.js';
+import { getMapEmbedUrl, getNavigationUrl, normalizeVenueData, resolveShortMapUrl, parseMapsLink } from '../../../../lib/mapService.js';
 import { sfxClick } from '../../../../lib/sfx';
 
 function TimelineRow({ item, onChange, onRemove }) {
@@ -54,9 +54,22 @@ export default function StepLocation({ data, update, onNext, onBack, onSkip }) {
         longitude: data.longitude,
       });
 
-  function handleMapsLinkChange(url) {
-    const parsed = normalizeVenueData({ ...data, mapsLink: url });
-    const navigationUrl = getNavigationUrl({ ...parsed, mapsLink: url });
+  async function handleMapsLinkChange(url) {
+    // First check whether the raw URL is a short maps link or contains coordinates
+    const rawParse = parseMapsLink(url);
+    let finalUrl = url;
+    if (rawParse && rawParse.shortUrl) {
+      try {
+        const resolved = await resolveShortMapUrl(rawParse.original);
+        if (resolved) finalUrl = resolved;
+      } catch {
+        // keep finalUrl as original
+      }
+    }
+
+    // Now normalize using the (possibly resolved) final URL
+    const parsed = normalizeVenueData({ ...data, mapsLink: finalUrl });
+    const navigationUrl = getNavigationUrl({ ...parsed, mapsLink: finalUrl });
     update({
       mapsLink: navigationUrl || url,
       mapsLat: parsed.latitude ?? null,
@@ -94,9 +107,16 @@ export default function StepLocation({ data, update, onNext, onBack, onSkip }) {
           {data.mapsLink
             ? coords
               ? 'تمام، تم تحديد اللوكيشن على الخريطة ✓'
-              : 'مش قادرين نستخرج الإحداثيات من اللينك ده تلقائيًا (شكله لينك مختصر) — بس هيتحفظ ويفتح خرائط جوجل عادي لما الضيوف يضغطوا عليه.'
+              : 'مش قادرين نستخرج الإحداثيات من اللينك ده تلقائيًا — بنحاول نحله لو هو لينك مختصر.'
             : 'Example: https://maps.app.goo.gl/xxxxx or https://www.google.com/maps/place/...'}
         </div>
+
+        {coords ? (
+          <div className="mt-2 text-[0.85rem]" style={{ color: 'rgba(246,244,239,0.85)' }}>
+            <div>Latitude: {coords.lat}</div>
+            <div>Longitude: {coords.lng}</div>
+          </div>
+        ) : null}
       </div>
 
       {coords && (

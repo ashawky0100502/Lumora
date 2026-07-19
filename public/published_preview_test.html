@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Published Invitation Preview</title></head>
+<body>
+  <h1>Published Invitation Preview (test-statue)</h1>
+  <div id="venue">
+    <h2>Venue</h2>
+    <div id="venueName"></div>
+    <div id="venueAddress"></div>
+    <div id="venueCoords"></div>
+    <div id="venuePlace"></div>
+    <div id="mapLink"></div>
+  </div>
+  <h2>Full JSON</h2>
+  <pre id="fulljson"></pre>
+  <script>
+    const published = {"venueName":"Statue of Liberty","mapsLink":"https://www.google.com/maps/place/Statue+of+Liberty/@40.6892494,-74.0445004,17z/data=!3m1!4b1!4m5!3m4!1s0x89c250b1b1d5d9ab:0x6c6d6e8f1f1d1e2b","locationDescription":"Liberty Island, New York, NY","date":"2026-09-01","time":"17:00","slug":"test-statue","template":"midnight","sections":{"location":true,"gallery":true,"engagement":true,"outings":true,"letters":true,"music":true,"menu":true,"messages":true,"comments":true,"rsvp":true,"timeline":true},"story":"","invitationMessage":"","howWeMet":"","engagementStory":"","letterGroom":"","letterBride":"","gallery":{"title":"","description":"","images":[]},"venue":{"name":"Statue of Liberty","address":"Liberty Island, New York, NY","ceremonyTime":"","receptionTime":"","image":"","mapUrl":"https://www.google.com/maps/search/?api=1&query=40.6892494,-74.0445004","mapLat":40.6892494,"mapLng":-74.0445004,"parkingInfo":"","placeId":""},"venueAddress":"Liberty Island, New York, NY","latitude":40.6892494,"longitude":-74.0445004,"placeId":"","timeline":[],"timeline_meta":{"title":"","description":"","events":[]},"outings":{"title":"Outings & Trips","description":"","images":[]},"comments":{"title":"","description":""},"messages":{"title":"","description":""},"quran":{"enabled":true,"verse":"","verseArabic":"","verseTranslation":"","surahName":"","audioUrl":"","reciterName":""},"menu":[],"countdown":{"targetDate":"2026-09-01","targetTime":"17:00"},"countdownDate":"2026-09-01","invitation":{"message":""},"engagement":{"story":""},"rsvp":{"enabled":true,"title":"We Would Be Honored","subtitle":"Your response will complete the invitation and remain treasured with the evening."}};
+    document.getElementById('venueName').textContent = 'Name: ' + (published.venue.name || published.venueName || '');
+    document.getElementById('venueAddress').textContent = 'Address: ' + (published.venue.address || published.venueAddress || '');
+    document.getElementById('venueCoords').textContent = 'Latitude: ' + (published.latitude ?? published.venue.mapLat) + ' Longitude: ' + (published.longitude ?? published.venue.mapLng);
+    document.getElementById('venuePlace').textContent = 'PlaceId: ' + (published.placeId || published.venue.placeId || '');
+    const a = document.createElement('a');
+    a.href = published.venue.mapUrl || published.mapUrl || '#';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Open in Google Maps';
+    document.getElementById('mapLink').appendChild(a);
+    document.getElementById('fulljson').textContent = JSON.stringify(published, null, 2);
+  </script>
+</body>
+</html>

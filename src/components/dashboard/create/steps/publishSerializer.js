@@ -9,7 +9,6 @@ function firstText(...values) {
 
 function firstValue(...values) {
   for (const value of values) {
-    if (value === undefined || value === null) continue;
     if (typeof value === 'string' && value.trim() === '') continue;
     if (Array.isArray(value) && value.length === 0) continue;
     return value;
@@ -59,8 +58,11 @@ export function serializeInvitationPayload(data = {}, slug) {
   const storyValue = data?.story;
   const outStory = typeof storyValue === 'object' && storyValue !== null ? storyValue : firstText(data.story, data.howWeMet);
 
+  // Omit the raw `mapsLink` from the published payload.
+  const { mapsLink: _mapsLink, ...restData } = data;
+
   return {
-    ...data,
+    ...restData,
     slug,
     template: data.template || 'midnight',
     sections: {
@@ -102,6 +104,12 @@ export function serializeInvitationPayload(data = {}, slug) {
       parkingInfo: firstText(data.parkingInfo, data.venue?.parkingInfo),
       placeId: normalizedVenue.googlePlaceId || firstText(data.googlePlaceId, data.venue?.placeId),
     },
+    // Expose structured venue fields for consumers that expect them directly
+    venueName: normalizedVenue.venueName || firstText(data.venueName, data.venue?.name),
+    venueAddress: normalizedVenue.venueAddress || firstText(data.locationDescription, data.venue?.address),
+    latitude: normalizedVenue.latitude ?? firstValue(data.latitude, data.mapsLat, data.venue?.lat),
+    longitude: normalizedVenue.longitude ?? firstValue(data.longitude, data.mapsLng, data.venue?.lng),
+    placeId: normalizedVenue.googlePlaceId || firstText(data.googlePlaceId, data.venue?.placeId),
     // timeline: keep the new nested object shape but also expose a
     // plain array on `timeline` (many templates check Array.isArray).
     // We keep both by assigning the array to `timeline` and attaching

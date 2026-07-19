@@ -10,6 +10,16 @@ test('builds latitude/longitude navigation links from Google Maps coordinates', 
   assert.equal(url, 'https://www.google.com/maps/search/?api=1&query=40.7484,-73.9857');
 });
 
+test('parses @lat,lng paths and produces coordinate navigation URLs', () => {
+  const url = getNavigationUrl({ mapsLink: 'https://www.google.com/maps/@30.0444,31.2357,17z' });
+  assert.equal(url, 'https://www.google.com/maps/search/?api=1&query=30.0444,31.2357');
+});
+
+test('parses q=lat,lng query param', () => {
+  const url = getNavigationUrl({ mapsLink: 'https://www.google.com/maps?q=30.0444,31.2357' });
+  assert.equal(url, 'https://www.google.com/maps/search/?api=1&query=30.0444,31.2357');
+});
+
 test('uses encoded address when coordinates are absent', () => {
   const url = getNavigationUrl({
     mapsLink: 'https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6%20%D8%A7%D9%84%D9%85%D9%84%D9%8A%D8%A9',

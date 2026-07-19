@@ -26,36 +26,53 @@ function getQueryParam(url, name) {
 function extractFromGoogleMapsUrl(rawUrl) {
   const normalizedUrl = normalizeText(rawUrl);
   if (!normalizedUrl) return null;
-
+  // Heuristics: look for coordinates in many Google Maps URL shapes.
+  //  - @LAT,LNG  (maps/place, /dir, etc)
+  //  - q=LAT,LNG or q=encoded address
+  //  - !3dLAT!4dLNG (share URLs)
+  //  - pathname segments that contain place names
   const candidates = [];
 
+  // @lat,lng in the path (most reliable)
   const latLngFromAt = normalizedUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i);
-  if (latLngFromAt) {
-    candidates.push({ latitude: Number(latLngFromAt[1]), longitude: Number(latLngFromAt[2]) });
-  }
+  if (latLngFromAt) candidates.push({ latitude: Number(latLngFromAt[1]), longitude: Number(latLngFromAt[2]) });
 
+  // q=lat,lng or q=address
   const latLngFromQuery = getQueryParam(normalizedUrl, 'q') || getQueryParam(normalizedUrl, 'query');
   if (latLngFromQuery) {
     const queryMatch = latLngFromQuery.match(/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
-    if (queryMatch) {
-      candidates.push({ latitude: Number(queryMatch[1]), longitude: Number(queryMatch[2]) });
-    }
+    if (queryMatch) candidates.push({ latitude: Number(queryMatch[1]), longitude: Number(queryMatch[2]) });
   }
 
+  // Older share format: !3dLAT!4dLNG
   const latLngFromPlace = normalizedUrl.match(/!3d(-?\d+(?:\.\d+))!4d(-?\d+(?:\.\d+))/i);
-  if (latLngFromPlace) {
-    candidates.push({ latitude: Number(latLngFromPlace[1]), longitude: Number(latLngFromPlace[2]) });
-  }
+  if (latLngFromPlace) candidates.push({ latitude: Number(latLngFromPlace[1]), longitude: Number(latLngFromPlace[2]) });
 
   const addressCandidates = [];
-  const placeName = normalizeText(getQueryParam(normalizedUrl, 'query') || getQueryParam(normalizedUrl, 'q'));
-  if (placeName) addressCandidates.push(placeName);
+
+  // If q is present and is not coordinates, treat as address candidate
+  const qParam = normalizeText(getQueryParam(normalizedUrl, 'q') || getQueryParam(normalizedUrl, 'query'));
+  if (qParam && !/^-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/.test(qParam)) addressCandidates.push(qParam);
 
   try {
     const parsed = new URL(normalizedUrl);
+    const hostname = parsed.hostname || '';
     const pathname = parsed.pathname || '';
-    if (pathname && !pathname.startsWith('/maps')) {
-      addressCandidates.push(pathname.replace(/^\/+|\/+$/g, ''));
+
+    // If the URL is a short maps link, signal the caller by returning shortUrl flag
+    if (/(^|\.)maps\.app\.goo\.gl$/.test(hostname) || /(^|\.)goo\.gl$/.test(hostname) || hostname.endsWith('goo.gl')) {
+      return { shortUrl: true, shortUrlHost: hostname, original: normalizedUrl };
+    }
+
+    // extract place name from /place/<name>/ or pathname segments for address
+    const placeMatch = pathname.match(/\/place\/([^/]+)/i);
+    if (placeMatch && placeMatch[1]) addressCandidates.push(decodeURIComponent(placeMatch[1].replace(/\+/g, ' ')).replace(/\+/g, ' '));
+
+    // fallback: use last pathname segment if it looks like text
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length) {
+      const last = parts[parts.length - 1];
+      if (/[a-zA-Z\u0600-\u06FF0-9\-\+\s]/.test(last)) addressCandidates.push(decodeURIComponent(last.replace(/\+/g, ' ')));
     }
   } catch {
     // Ignore URL parsing issues.
@@ -78,6 +95,17 @@ function extractFromGoogleMapsUrl(rawUrl) {
     googlePlaceId: normalizeText(getQueryParam(normalizedUrl, 'cid') || getQueryParam(normalizedUrl, 'place_id')),
   };
 }
+
+// Resolve short Google Maps links by following redirects.
+export async function resolveShortMapUrl(url) {
+  try {
+    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    // prefer final URL
+    return res.url || url;
+  } catch {
+    return url;
+  }
+  }
 
 export function normalizeVenueData(input = {}) {
   const rawUrl = normalizeText(input.mapsLink || input.googleMapsUrl || input.mapUrl || '');
@@ -170,3 +198,7 @@ export default {
   getMapsNavigationUrl,
   getMapEmbedUrl,
 };
+
+export function parseMapsLink(rawUrl) {
+  return extractFromGoogleMapsUrl(rawUrl);
+}
