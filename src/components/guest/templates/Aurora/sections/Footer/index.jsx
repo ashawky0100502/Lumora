@@ -37,6 +37,8 @@ function resolveActions(data) {
   };
 }
 
+import normalizeExternalUrl from '../../../../../../lib/normalizeUrl';
+
 export default function AuroraFooter({ data = {} }) {
   const prefersReducedMotion = useReducedMotion();
   if (typeof window !== 'undefined') {
@@ -88,8 +90,9 @@ export default function AuroraFooter({ data = {} }) {
     const fallbackUrl = venue ? `https://www.google.com/maps?q=${encodeURIComponent(venue)}` : '';
     const targetUrl = locationUrl || fallbackUrl;
 
-    if (targetUrl) {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    const safe = normalizeExternalUrl(targetUrl);
+    if (safe) {
+      window.open(safe, '_blank', 'noopener,noreferrer');
     }
   };
 

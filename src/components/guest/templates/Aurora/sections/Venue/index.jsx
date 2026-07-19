@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import '../../debugRender';
 import './venue.css';
+import normalizeExternalUrl from '../../../../../../lib/normalizeUrl';
 
 function normalizeVenue(data) {
   return {
@@ -137,7 +138,7 @@ export default function AuroraVenue({ data = {} }) {
               </div>
 
               <div className="aurora-venue__actions">
-                {mapUrl ? <a className="aurora-venue__button" href={mapUrl} target="_blank" rel="noreferrer">Open in Google Maps</a> : null}
+                {mapUrl ? <a className="aurora-venue__button" href={normalizeExternalUrl(mapUrl)} target="_blank" rel="noreferrer">Open in Google Maps</a> : null}
                 <button type="button" className="aurora-venue__button" onClick={handleCopyAddress}>{copied ? 'Address copied' : 'Copy Address'}</button>
                 <button type="button" className="aurora-venue__button" onClick={handleAddToCalendar}>Add to Calendar</button>
               </div>

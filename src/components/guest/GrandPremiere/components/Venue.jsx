@@ -94,6 +94,8 @@ function resolveMapHref(data) {
  * an icon font/image. Same gradient-shaded inline-SVG technique
  * `OpeningScene.jsx` already uses for the two rings.
  */
+import normalizeExternalUrl from '../../../../lib/normalizeUrl';
+
 function VenuePin({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -159,7 +161,7 @@ export default function Venue({ data }) {
             )}
 
             {mapHref && (
-              <a className="gp-venue__map" href={mapHref} target="_blank" rel="noopener noreferrer">
+              <a className="gp-venue__map" href={normalizeExternalUrl(mapHref)} target="_blank" rel="noopener noreferrer">
                 <VenuePin className="gp-venue__map-icon" />
                 <span>{t.openMap}</span>
               </a>

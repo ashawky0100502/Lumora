@@ -1,5 +1,6 @@
 import useScrollReveal from './lib/useScrollReveal';
 import { firstText } from './lib/builderData';
+import normalizeExternalUrl from '../../../../lib/normalizeUrl';
 
 /**
  * ETERNAL VOYAGE — Venue section (premium cinematic pass).
@@ -87,7 +88,7 @@ export default function Venue({ data }) {
             </svg>
             <a
               className="ev-venue__map-btn"
-              href={mapUrl}
+              href={normalizeExternalUrl(mapUrl)}
               target="_blank"
               rel="noopener noreferrer"
             >
