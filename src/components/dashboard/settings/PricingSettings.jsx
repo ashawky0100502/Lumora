@@ -1,22 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TEMPLATE_REGISTRY } from '../../../lib/templateRegistry';
-import { getAllTemplatePrices, setTemplatePrice, CURRENCY } from '../../../lib/visitorPricing';
+import { getTemplatePrices, setTemplatePrice, CURRENCY } from '../../../lib/visitorPricing';
 import { sfxClick, sfxSuccess, sfxError } from '../../../lib/sfx';
 import { SettingsCard } from './SettingsUI';
 
-// Feeds directly into VisitorTemplateGallery.jsx / VisitorContactPending.jsx
-// — a price saved here shows up for guests immediately, no code changes.
 export default function PricingSettings() {
-  const [prices, setPrices] = useState(() => getAllTemplatePrices());
+  const [prices, setPrices] = useState(null);
   const [savedId, setSavedId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getTemplatePrices()
+      .then((data) => {
+        if (!cancelled) setPrices(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleChange(id, value) {
     setPrices((p) => ({ ...p, [id]: value }));
   }
 
-  function handleSave(id) {
+  async function handleSave(id) {
     sfxClick();
-    const result = setTemplatePrice(id, prices[id]);
+    const result = await setTemplatePrice(id, prices[id]);
     if (!result.ok) {
       sfxError();
       return;
@@ -24,6 +42,22 @@ export default function PricingSettings() {
     sfxSuccess();
     setSavedId(id);
     setTimeout(() => setSavedId((cur) => (cur === id ? null : cur)), 1500);
+  }
+
+  if (loading) {
+    return (
+      <SettingsCard title="Template Pricing" description="These prices show up when a visitor browses templates as a Guest — set them however you like.">
+        <div className="py-10 text-center text-[0.9rem] text-slate-300">Loading prices…</div>
+      </SettingsCard>
+    );
+  }
+
+  if (error) {
+    return (
+      <SettingsCard title="Template Pricing" description="These prices show up when a visitor browses templates as a Guest — set them however you like.">
+        <div className="py-10 text-center text-[0.9rem] text-red-300">Could not load prices. Please refresh and try again.</div>
+      </SettingsCard>
+    );
   }
 
   return (

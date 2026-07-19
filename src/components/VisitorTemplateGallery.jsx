@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TEMPLATE_REGISTRY } from '../lib/templateRegistry';
-import { getTemplatePrice, CURRENCY } from '../lib/visitorPricing';
+import { getTemplatePrices, CURRENCY } from '../lib/visitorPricing';
 import { getTemplateRatingsSummary, getVisitorOwnRatings, rateTemplate } from '../lib/templateRatingsApi';
 import { getVisitorToken } from '../lib/visitorIdentity';
 import { sfxClick } from '../lib/sfx';
@@ -17,10 +17,24 @@ import StarRating from './StarRating';
 export default function VisitorTemplateGallery({ onSelectTemplate, onBack }) {
   const [ratings, setRatings] = useState({}); // { [id]: { avgRating, ratingCount } }
   const [ownRatings, setOwnRatings] = useState({}); // { [id]: 1-5 }
+  const [prices, setPrices] = useState({});
+  const [loadingPrices, setLoadingPrices] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     getTemplateRatingsSummary().then(setRatings).catch(() => {});
     getVisitorOwnRatings(getVisitorToken()).then(setOwnRatings).catch(() => {});
+    getTemplatePrices()
+      .then((data) => {
+        if (!cancelled) setPrices(data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingPrices(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleRate(templateId, stars) {
@@ -75,7 +89,7 @@ export default function VisitorTemplateGallery({ onSelectTemplate, onBack }) {
                   {t.name}
                 </h3>
                 <span className="font-display text-[0.9rem] font-semibold" style={{ color: 'rgba(246,244,239,0.85)' }}>
-                  {getTemplatePrice(t.id)} {CURRENCY}
+                  {loadingPrices ? '...' : prices[t.id] ?? 0} {CURRENCY}
                 </span>
               </div>
               <p className="mb-3 text-[0.78rem] leading-relaxed" style={{ color: 'rgba(246,244,239,0.5)' }}>

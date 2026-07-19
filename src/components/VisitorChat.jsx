@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getTemplatePrice, CURRENCY } from '../lib/visitorPricing';
+import { getTemplatePrices, CURRENCY } from '../lib/visitorPricing';
 import { getVisitorToken, getVisitorName, getVisitorEmail } from '../lib/visitorIdentity';
 import {
   openVisitorConversation,
@@ -28,6 +28,8 @@ export default function VisitorChat({ template, onBack }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [prices, setPrices] = useState({});
+  const [loadingPrices, setLoadingPrices] = useState(true);
   const scrollRef = useRef(null);
   const visitorToken = useRef(getVisitorToken());
 
@@ -51,13 +53,6 @@ export default function VisitorChat({ template, onBack }) {
         if (cancelled) return;
         await refreshThread();
         if (cancelled) return;
-        // Assigned only now, and only if this effect run wasn't cancelled
-        // in the meantime — StrictMode's mount->cleanup->mount fires this
-        // whole effect twice in dev; without the `cancelled` check, the
-        // *first* run's subscription could still get created after its
-        // own cleanup already fired (using the `unsubscribe` variable's
-        // stale no-op value at that time), leaking a channel that never
-        // gets closed.
         unsubscribe = subscribeToConversationMessages(conv.id, () => refreshThread());
       } finally {
         if (!cancelled) setReady(true);
@@ -75,6 +70,21 @@ export default function VisitorChat({ template, onBack }) {
       clearInterval(statusPoll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getTemplatePrices()
+      .then((data) => {
+        if (!cancelled) setPrices(data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingPrices(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -170,7 +180,7 @@ export default function VisitorChat({ template, onBack }) {
             {template.name}
           </span>
           <span className="font-display text-[0.8rem] font-semibold" style={{ color: 'rgba(246,244,239,0.85)' }}>
-            {getTemplatePrice(template.id)} {CURRENCY}
+            {loadingPrices ? '...' : prices[template.id] ?? 0} {CURRENCY}
           </span>
         </div>
       )}

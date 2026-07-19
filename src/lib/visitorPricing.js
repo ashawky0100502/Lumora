@@ -1,13 +1,4 @@
-/**
- * VISITOR-FACING TEMPLATE PRICING
- * Prices shown next to each template when someone continues as a Guest
- * (see VisitorTemplateGallery.jsx / VisitorContactPending.jsx).
- *
- * Backed by localStorage with sane defaults, and fully editable from
- * Settings > Template Pricing — no code changes needed to update a price.
- * Swap for a Supabase-backed table later; callers here don't need to change.
- */
-const PRICING_KEY = 'lumora_template_pricing';
+import { supabaseClient } from './supabaseClient';
 
 const DEFAULT_PRICES = {
   midnight: 350,
@@ -19,44 +10,40 @@ const DEFAULT_PRICES = {
 
 export const CURRENCY = 'EGP';
 
-function readOverrides() {
-  try {
-    const raw = localStorage.getItem(PRICING_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
+function mergePrices(rows) {
+  const prices = { ...DEFAULT_PRICES };
+  for (const row of rows || []) {
+    const value = Number(row.price);
+    if (!Number.isFinite(value) || value < 0) continue;
+    prices[row.template_id] = value;
   }
+  return prices;
 }
 
-function writeOverrides(overrides) {
-  try {
-    localStorage.setItem(PRICING_KEY, JSON.stringify(overrides));
-  } catch {
-    // localStorage unavailable — price edits just won't persist across reloads.
-  }
+export function getDefaultTemplatePrices() {
+  return { ...DEFAULT_PRICES };
 }
 
-export function getTemplatePrice(templateId) {
-  const overrides = readOverrides();
-  return overrides[templateId] ?? DEFAULT_PRICES[templateId] ?? 0;
+export async function getTemplatePrices() {
+  const { data, error } = await supabaseClient.rpc('get_template_prices');
+  if (error) throw error;
+  return mergePrices(data);
 }
 
-// { templateId: price } for every known template, overrides merged over defaults.
-export function getAllTemplatePrices() {
-  const overrides = readOverrides();
-  return { ...DEFAULT_PRICES, ...overrides };
+export async function getTemplatePrice(templateId) {
+  const prices = await getTemplatePrices();
+  return prices[templateId] ?? DEFAULT_PRICES[templateId] ?? 0;
 }
 
-export function setTemplatePrice(templateId, price) {
+export async function setTemplatePrice(templateId, price) {
   const value = Number(price);
   if (Number.isNaN(value) || value < 0) return { ok: false, error: 'invalid-price' };
-  writeOverrides({ ...readOverrides(), [templateId]: value });
-  return { ok: true };
-}
 
-export function resetTemplatePrice(templateId) {
-  const overrides = readOverrides();
-  delete overrides[templateId];
-  writeOverrides(overrides);
+  const { data, error } = await supabaseClient.rpc('upsert_template_price', {
+    p_template_id: templateId,
+    p_price: value,
+  });
+  if (error) return { ok: false, error: 'server' };
+
   return { ok: true };
 }
