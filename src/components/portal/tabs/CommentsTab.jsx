@@ -104,11 +104,15 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
     }
   }, [currentPage]);
 
-  const totalComments = comments?.length ?? 0;
-  const totalPages = Math.ceil(totalComments / commentsPerPage) || 1;
+  // Group comments into parent comments with their replies
+  // A comment is a "parent" if it appears in the original flat list
+  // The "reply" field on each comment indicates the couple's response
+  const rootComments = comments || [];
+  const totalRootComments = rootComments.length;
+  const totalPages = Math.ceil(totalRootComments / commentsPerPage) || 1;
   const startIdx = currentPage * commentsPerPage;
   const endIdx = startIdx + commentsPerPage;
-  const visible = comments ? comments.slice(startIdx, endIdx) : [];
+  const visible = rootComments.slice(startIdx, endIdx);
 
   const isFirstPage = currentPage === 0;
   const isLastPage = currentPage >= totalPages - 1;
