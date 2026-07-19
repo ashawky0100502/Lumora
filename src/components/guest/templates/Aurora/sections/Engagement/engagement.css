@@ -1,0 +1,138 @@
+.aurora-engagement {
+  position: relative;
+  padding: 7rem 1.5rem 5rem;
+  background: linear-gradient(180deg, #fcf8f0 0%, #f2e3cb 100%);
+  color: #2f241a;
+}
+
+.aurora-engagement::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(184, 139, 63, 0.12), transparent 42%);
+  pointer-events: none;
+}
+
+.aurora-engagement__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+}
+
+.aurora-engagement__copy {
+  color: #2f241a;
+}
+
+.aurora-engagement__eyebrow,
+.aurora-premium-eyebrow {
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: #b27f34;
+  font-weight: 700;
+}
+
+.aurora-engagement__title,
+.aurora-premium-title {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 3vw, 2.9rem);
+  line-height: 1.08;
+  color: #2e2014;
+}
+
+.aurora-engagement__description,
+.aurora-premium-body {
+  margin: 0 0 1rem;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(47, 36, 26, 0.82);
+}
+
+.aurora-engagement__meta,
+.aurora-premium-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+
+.aurora-engagement__detail {
+  padding: 0.6rem 0.95rem;
+  border: 1px solid rgba(184, 139, 63, 0.24);
+  border-radius: 999px;
+  color: #6f5429;
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(10px);
+}
+
+.aurora-engagement__timeline {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+.aurora-engagement__timeline-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(95, 69, 38, 0.16);
+}
+
+.aurora-engagement__timeline-label {
+  color: #b27f34;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.74rem;
+}
+
+.aurora-engagement__timeline-value {
+  color: rgba(47, 36, 26, 0.92);
+}
+
+.aurora-engagement__gallery {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.aurora-engagement__image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 1rem;
+  border: 1px solid rgba(184, 139, 63, 0.28);
+  box-shadow: 0 16px 36px rgba(92, 70, 37, 0.14);
+}
+
+.aurora-premium-surface {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: 28px;
+  border: 1px solid rgba(184, 139, 63, 0.2);
+  background: linear-gradient(135deg, rgba(255, 250, 241, 0.95), rgba(247, 235, 214, 0.92));
+  box-shadow: 0 20px 60px rgba(60, 38, 16, 0.08);
+}
+
+.aurora-premium-card {
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .aurora-engagement__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .aurora-engagement__gallery {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#241a10"/>
+      <stop offset="65%" stop-color="#0e0a06"/>
+      <stop offset="100%" stop-color="#020202"/>
+    </radialGradient>
+    <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a3831f"/>
+      <stop offset="50%" stop-color="#f0d98c"/>
+      <stop offset="100%" stop-color="#a3831f"/>
+    </linearGradient>
+    <linearGradient id="goldSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0d98c"/>
+      <stop offset="100%" stop-color="#D4AF37"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="97" fill="url(#bg)"/>
+
+  <!-- interlocked rings (thicker for small-size clarity) -->
+  <ellipse cx="76" cy="122" rx="35" ry="35" fill="none" stroke="url(#goldLine)" stroke-width="9"/>
+  <ellipse cx="124" cy="122" rx="35" ry="35" fill="none" stroke="url(#goldLine)" stroke-width="9"/>
+
+  <!-- rising flame / spark -->
+  <path d="M100 40
+           C 111 55, 117 68, 111 79
+           C 107 87, 95 87, 91 79
+           C 85 68, 89 55, 100 40 Z"
+        fill="url(#goldSoft)"/>
+</svg>

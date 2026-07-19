@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>LUMORA — Where Love Becomes an Experience</title>
+    <meta name="description" content="LUMORA — design unforgettable wedding invitations and celebrations." />
+    <link rel="preconnect" href="https://fonts.googleapis.com/" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <!--
+      Fonts are no longer loaded here. Each page loads only the typefaces
+      it actually needs, on demand:
+        - guest invitation pages -> src/hooks/useThemeFonts.js (per theme)
+        - couple portal          -> same, via CouplePortalEntry
+        - dashboard/login        -> src/App.jsx (fixed chrome font set)
+      See src/lib/fontLoader.js for the implementation.
+    -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

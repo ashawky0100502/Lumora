@@ -1,0 +1,505 @@
+.aurora-opening {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #04070b;
+  color: #f8f2e7;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.aurora-cinematic-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: #02040a;
+}
+
+.aurora-scene {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  overflow-x: hidden;
+  isolation: isolate;
+  background: #04070b;
+}
+
+.aurora-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.aurora-layer--background {
+  z-index: 0;
+}
+
+.aurora-layer--marble {
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+.aurora-layer--glass {
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+.aurora-layer--fog {
+  z-index: 3;
+}
+
+.aurora-layer--light {
+  z-index: 4;
+}
+
+.aurora-layer--dust {
+  z-index: 5;
+}
+
+.aurora-curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 54%;
+  z-index: 6;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(255, 249, 236, 0.92), rgba(245, 230, 205, 0.72) 35%, rgba(255, 250, 241, 0.95) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 0 90px rgba(7, 8, 12, 0.22);
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.aurora-curtain::before,
+.aurora-curtain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.aurora-curtain::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.72), transparent 30%, rgba(76, 46, 20, 0.16) 100%);
+}
+
+.aurora-curtain::after {
+  background: radial-gradient(circle at 40% 25%, rgba(255,255,255,0.35), transparent 40%);
+  mix-blend-mode: screen;
+}
+
+.aurora-curtain--left {
+  left: -2%;
+  border-top-right-radius: 42% 28%;
+  border-bottom-right-radius: 44% 30%;
+}
+
+.aurora-curtain--right {
+  right: -2%;
+  border-top-left-radius: 42% 28%;
+  border-bottom-left-radius: 44% 30%;
+}
+
+.aurora-curtain-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: radial-gradient(circle at center, rgba(255, 215, 113, 0.26), transparent 58%);
+  pointer-events: none;
+}
+
+.aurora-image,
+.aurora-marble,
+.aurora-glass,
+.aurora-fog-image,
+.aurora-light-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.aurora-image--background {
+  transform: scale(1.03);
+  filter: brightness(0.9) contrast(1.02) saturate(1);
+}
+
+.aurora-marble {
+  opacity: 0.24;
+  background-size: cover;
+  background-position: center;
+  filter: blur(0.2px) saturate(0.95);
+}
+
+.aurora-glass {
+  opacity: 0.16;
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+}
+
+.aurora-fog-image {
+  object-position: center top;
+  opacity: 0.5;
+  filter: blur(2px) brightness(1.02);
+}
+
+.aurora-light-image {
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+.aurora-particle {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.aurora-typography {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  pointer-events: none;
+  text-shadow: 0 1px 20px rgba(5, 7, 11, 0.36);
+}
+
+.aurora-typography-card {
+  position: relative;
+  max-width: min(92vw, 760px);
+  padding: 2rem 2.45rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 24px 70px rgba(3, 6, 14, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(30px) saturate(1.15);
+  -webkit-backdrop-filter: blur(30px) saturate(1.15);
+  isolation: isolate;
+}
+
+.aurora-subtitle {
+  margin-bottom: 12px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  font-size: clamp(0.72rem, 1.1vw, 0.8rem);
+  color: rgba(248, 242, 231, 0.86);
+}
+
+.aurora-title {
+  margin: 0;
+  max-width: 760px;
+  font-size: clamp(3rem, 5.2vw, 5.4rem);
+  line-height: 0.94;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fdf8f0;
+}
+
+.aurora-caption {
+  margin-top: 14px;
+  font-size: clamp(0.92rem, 1vw, 1rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 231, 0.82);
+}
+
+.aurora-opening-hero {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 8;
+}
+
+.aurora-opening-hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(22px) saturate(1.08);
+  -webkit-backdrop-filter: blur(22px) saturate(1.08);
+  box-shadow: 0 14px 36px rgba(3, 6, 14, 0.16);
+}
+
+.aurora-opening-hero-date,
+.aurora-opening-hero-venue {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 231, 0.9);
+}
+
+.aurora-opening-hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+  color: #fdf8f0;
+  text-decoration: none;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.aurora-opening-hero-button:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+  box-shadow: 0 10px 20px rgba(3, 6, 14, 0.16);
+}
+
+.aurora-opening-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 231, 0.82);
+}
+
+.aurora-opening-scroll-line {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+}
+
+@media (max-width: 820px) {
+  .aurora-curtain { width: 20%; }
+  .aurora-title { font-size: clamp(2.2rem, 7vw, 3rem); }
+  .aurora-typography-card { padding: 1.6rem 1.8rem; border-radius: 1.5rem; }
+  .aurora-opening-hero-card { padding: 14px 18px; border-radius: 999px; }
+}
+
+.aurora-hero {
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 45%), #04070b;
+}
+
+.aurora-hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: clamp(18px, 3.5vw, 24px);
+  padding-top: calc(clamp(18px, 3.5vw, 24px) + env(safe-area-inset-top));
+  padding-bottom: calc(clamp(18px, 3.5vw, 24px) + env(safe-area-inset-bottom));
+}
+
+.aurora-hero-glass {
+  width: min(92vw, min(640px, calc(100vw - 32px)));
+  padding: 34px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.1));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -8px 24px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.aurora-hero-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,0.22), transparent 34%, rgba(255,255,255,0.1) 70%, transparent 100%),
+    radial-gradient(circle at top left, rgba(255,255,255,0.22), transparent 60%);
+  pointer-events: none;
+}
+
+.aurora-hero-glass::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(255,255,255,0.16);
+  pointer-events: none;
+}
+
+.aurora-hero-subtitle {
+  margin-bottom: 10px;
+  font-size: 0.74rem;
+  letter-spacing: 0.4em;
+  color: #7B5B3A;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.aurora-hero-title {
+  font-size: clamp(2.5rem, 4.8vw, 4.6rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 0.98;
+  color: #C8A16A;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.2), 0 2px 8px rgba(20, 16, 10, 0.18);
+  position: relative;
+}
+
+.aurora-hero-title::before {
+  content: '';
+  position: absolute;
+  inset: -8px -12px;
+  background: radial-gradient(circle at center, rgba(255, 220, 170, 0.24), transparent 72%);
+  filter: blur(10px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.aurora-hero-caption {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8C6A46;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.aurora-hero-actions {
+  margin-top: 24px;
+}
+
+.aurora-hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1) 50%, rgba(245, 229, 201, 0.16));
+  color: #6A4D2F;
+  text-decoration: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 24px rgba(5, 8, 16, 0.18);
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.aurora-hero-button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.14) 50%, rgba(245, 229, 201, 0.2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 14px 28px rgba(7, 12, 20, 0.24);
+}
+
+.aurora-hero-star {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
+
+.aurora-scroll-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(248, 242, 231, 0.76);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  z-index: 8;
+  text-shadow: 0 1px 16px rgba(3, 6, 14, 0.4);
+}
+
+.aurora-scroll-line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+}
+
+@media (max-width: 820px) {
+  .aurora-hero-glass {
+    padding: 28px 22px;
+    border-radius: 24px;
+  }
+
+  .aurora-hero-title {
+    font-size: clamp(2rem, 7vw, 2.7rem);
+  }
+
+  .aurora-scroll-indicator {
+    bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aurora-typography {
+    padding: 0 16px;
+  }
+
+  .aurora-typography-card {
+    max-width: 100%;
+    padding: 1.35rem 1.1rem;
+    border-radius: 1.25rem;
+  }
+
+  .aurora-title {
+    font-size: clamp(1.95rem, 8vw, 2.5rem);
+  }
+
+  .aurora-caption {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    margin-top: 10px;
+  }
+
+  .aurora-hero-glass {
+    width: min(100%, 100%);
+    padding: 22px 18px;
+  }
+
+  .aurora-hero-subtitle {
+    font-size: 0.64rem;
+    letter-spacing: 0.3em;
+  }
+
+  .aurora-hero-title {
+    font-size: clamp(1.8rem, 7.2vw, 2.35rem);
+  }
+
+  .aurora-hero-button {
+    width: min(100%, 260px);
+    font-size: 0.72rem;
+  }
+
+  .aurora-scroll-indicator {
+    font-size: 0.64rem;
+    bottom: 14px;
+    gap: 6px;
+  }
+}

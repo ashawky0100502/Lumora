@@ -1,0 +1,15 @@
+{
+  "scene": {
+    "height": "100vh",
+    "width": "100%"
+  },
+  "theme": {
+    "background": { "color": "#05070b" },
+    "text": { "primary": "#f8f4eb", "secondary": "#ded0aa" },
+    "typography": { "fontFamily": "Inter, system-ui, sans-serif" }
+  },
+  "animations": {
+    "scene": {},
+    "layers": {}
+  }
+}

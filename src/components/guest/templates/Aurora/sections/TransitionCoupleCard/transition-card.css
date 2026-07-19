@@ -1,0 +1,162 @@
+.aurora-transition-card {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 48px);
+  background-image: url('../../../../../../assets/lumora/aurora/backgrounds/aurora-invitation-bg.webp.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.aurora-transition-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 248, 238, 0.04) 0%, rgba(255, 248, 238, 0.02) 100%);
+  pointer-events: none;
+}
+
+.aurora-transition-card__surface {
+  position: relative;
+  z-index: 1;
+  width: min(60vw, 760px);
+  max-width: 760px;
+  min-height: clamp(280px, 34vw, 340px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(22px, 3vw, 34px) clamp(28px, 4vw, 44px);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 248, 238, 0.14);
+  backdrop-filter: blur(5px) saturate(1.05);
+  -webkit-backdrop-filter: blur(5px) saturate(1.05);
+  box-shadow: 0 18px 50px rgba(10, 6, 2, 0.10), 0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+  overflow: visible;
+  text-align: center;
+  transform: translateY(0);
+  animation: aurora-transition-card-float 6s ease-in-out infinite alternate;
+}
+
+.aurora-transition-card__surface::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+
+.aurora-transition-card__glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(70%, 420px);
+  height: 180px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0.18) 40%, rgba(255, 255, 255, 0) 72%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.aurora-transition-card__eyebrow {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  font-family: "Inter", "Manrope", "SF Pro Display", "Segoe UI", sans-serif;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a46f2a;
+  text-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+}
+
+.aurora-transition-card__title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: "Canela", "Cormorant Garamond", "Bodoni Moda", "PP Editorial New", "Iowan Old Style", serif;
+  font-size: clamp(2.45rem, 4.4vw, 3.7rem);
+  line-height: 0.95;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: #2f241a;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.23);
+}
+
+.aurora-transition-card__divider {
+  position: relative;
+  z-index: 1;
+  width: 128px;
+  height: 1px;
+  margin: 14px auto 0;
+  background: linear-gradient(90deg, transparent, rgba(173, 124, 58, 0.82), transparent);
+}
+
+.aurora-transition-card__date,
+.aurora-transition-card__venue {
+  position: relative;
+  z-index: 1;
+  margin: 12px 0 0;
+  font-family: "Inter", "Manrope", "SF Pro Display", "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(107, 77, 39, 0.9);
+  text-shadow: 0 1px 6px rgba(255, 255, 255, 0.16);
+}
+
+.aurora-transition-card__venue {
+  margin-top: 6px;
+  font-size: 0.74rem;
+  letter-spacing: 0.26em;
+  color: rgba(107, 77, 39, 0.82);
+}
+
+@keyframes aurora-transition-card-float {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (max-width: 900px) {
+  .aurora-transition-card__surface {
+    width: min(72vw, 100%);
+    min-height: 300px;
+    padding: 24px 26px;
+  }
+}
+
+@media (max-width: 640px) {
+  .aurora-transition-card {
+    padding: 24px 12px;
+    min-height: 92vh;
+  }
+
+  .aurora-transition-card__surface {
+    width: min(88vw, 100%);
+    min-height: 280px;
+    padding: 22px 18px;
+    border-radius: 24px;
+  }
+
+  .aurora-transition-card__title {
+    font-size: clamp(1.9rem, 7vw, 2.5rem);
+  }
+
+  .aurora-transition-card__date,
+  .aurora-transition-card__venue {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="rayGradient" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#fff9f0" stop-opacity="0.18"/>
+      <stop offset="0.35" stop-color="#fff1d9" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#fff1e1" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.8 0"/>
+    </filter>
+  </defs>
+  <rect width="1920" height="1080" fill="transparent"/>
+  <g filter="url(#softBlur)">
+    <path d="M-120 0 L760 1080 L840 1080 L-40 0 Z" fill="url(#rayGradient)" opacity="0.8"/>
+    <path d="M420 0 L1140 1080 L1220 1080 L500 0 Z" fill="url(#rayGradient)" opacity="0.6"/>
+    <path d="M900 0 L1620 1080 L1700 1080 L980 0 Z" fill="url(#rayGradient)" opacity="0.42"/>
+  </g>
+  <radialGradient id="flareCore" cx="0.2" cy="0.1" r="0.4">
+    <stop offset="0" stop-color="#fff8e7" stop-opacity="0.5"/>
+    <stop offset="1" stop-color="#fff8e7" stop-opacity="0"/>
+  </radialGradient>
+  <circle cx="384" cy="108" r="420" fill="url(#flareCore)" opacity="0.56"/>
+</svg>

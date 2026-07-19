@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="ambientGlow" cx="0.5" cy="0.4" r="0.65">
+      <stop offset="0" stop-color="#fff7e9" stop-opacity="0.26"/>
+      <stop offset="0.3" stop-color="#f8f0e2" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#f8f0e2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="transparent"/>
+  <ellipse cx="960" cy="430" rx="820" ry="520" fill="url(#ambientGlow)" opacity="0.86"/>
+  <ellipse cx="960" cy="470" rx="560" ry="320" fill="rgba(255,244,229,0.22)"/>
+  <ellipse cx="960" cy="520" rx="360" ry="220" fill="rgba(255,246,236,0.16)"/>
+</svg>

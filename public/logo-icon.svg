@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#241a10"/>
+      <stop offset="65%" stop-color="#0e0a06"/>
+      <stop offset="100%" stop-color="#020202"/>
+    </radialGradient>
+    <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a601f"/>
+      <stop offset="25%" stop-color="#D4AF37"/>
+      <stop offset="45%" stop-color="#f0d98c"/>
+      <stop offset="55%" stop-color="#fff8dd"/>
+      <stop offset="65%" stop-color="#f0d98c"/>
+      <stop offset="80%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#7a601f"/>
+    </linearGradient>
+    <linearGradient id="goldSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0d98c"/>
+      <stop offset="100%" stop-color="#D4AF37"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="97" fill="url(#bg)"/>
+  <circle cx="100" cy="100" r="93.5" fill="none" stroke="url(#goldLine)" stroke-width="1.4" opacity="0.85"/>
+
+  <!-- interlocked rings -->
+  <ellipse cx="78" cy="118" rx="32" ry="32" fill="none" stroke="url(#goldLine)" stroke-width="5.5"/>
+  <ellipse cx="122" cy="118" rx="32" ry="32" fill="none" stroke="url(#goldLine)" stroke-width="5.5"/>
+
+  <!-- rising flame / spark above the rings -->
+  <path d="M100 46
+           C 109 59, 114 70, 109 80
+           C 106 87, 97 87, 94 80
+           C 89 70, 92 59, 100 46 Z"
+        fill="url(#goldSoft)"/>
+  <circle cx="100" cy="38" r="3.2" fill="url(#goldSoft)"/>
+
+  <!-- art-deco corner ticks -->
+  <g stroke="url(#goldLine)" stroke-width="1.6" stroke-linecap="round">
+    <path d="M100 8 L100 18"/>
+    <path d="M100 182 L100 192"/>
+    <path d="M8 100 L18 100"/>
+    <path d="M182 100 L192 100"/>
+  </g>
+</svg>

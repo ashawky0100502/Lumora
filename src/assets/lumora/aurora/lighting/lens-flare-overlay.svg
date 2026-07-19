@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="flareBeam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf5" stop-opacity="0.9"/>
+      <stop offset="0.15" stop-color="#fff0df" stop-opacity="0.5"/>
+      <stop offset="0.4" stop-color="#fde9d8" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#f8efe4" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="flareGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1920" height="1080" fill="transparent"/>
+  <ellipse cx="420" cy="120" rx="130" ry="70" fill="rgba(255,255,255,0.18)" filter="url(#flareGlow)"/>
+  <ellipse cx="520" cy="190" rx="240" ry="120" fill="rgba(255,248,236,0.12)"/>
+  <path d="M120 0 L220 0 L1420 1080 L1320 1080 Z" fill="url(#flareBeam)" opacity="0.18"/>
+  <circle cx="275" cy="85" r="28" fill="#fff8e6" opacity="0.32"/>
+  <circle cx="350" cy="145" r="18" fill="#fff7e4" opacity="0.22"/>
+  <circle cx="465" cy="220" r="12" fill="#fff8ef" opacity="0.16"/>
+</svg>
