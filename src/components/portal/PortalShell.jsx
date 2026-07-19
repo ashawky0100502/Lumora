@@ -167,8 +167,8 @@ export default function PortalShell({ slug, code, data, theme, lang }) {
       </div>
 
       {/* ---- Content ---- */}
-      <div className="flex-1 overflow-y-auto px-5 py-8 sm:px-10">
-        <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <div className="flex-1 overflow-y-auto px-5 py-8 pb-28 sm:px-10">
+        <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full">
           {tab === 'overview' && (
             <OverviewTab theme={theme} t={t} lang={lang} data={data} rsvps={rsvps} threads={threads} comments={comments} onNavigate={setTab} />
           )}

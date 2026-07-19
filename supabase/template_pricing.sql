@@ -19,7 +19,7 @@ create or replace function get_template_prices()
 returns table (template_id text, price numeric)
 language sql security definer set search_path = public stable
 as $$
-  select template_id, price from template_pricing;
+  select tp.template_id, tp.price from template_pricing as tp;
 $$;
 grant execute on function get_template_prices() to anon, authenticated;
 
@@ -39,7 +39,7 @@ begin
   values (p_template_id, p_price)
   on conflict (template_id) do update set price = excluded.price, updated_at = now();
 
-  return query select template_id, price from template_pricing where template_id = p_template_id;
+  return query select tp.template_id, tp.price from template_pricing as tp where tp.template_id = p_template_id;
 end;
 $$;
 grant execute on function upsert_template_price(text, numeric) to anon, authenticated;
