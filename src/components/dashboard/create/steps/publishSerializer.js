@@ -1,3 +1,5 @@
+import { getNavigationUrl, validateVenueData } from '../../../../lib/mapService.js';
+
 function firstText(...values) {
   for (const value of values) {
     if (typeof value === 'string' && value.trim()) return value.trim();
@@ -17,6 +19,17 @@ function firstValue(...values) {
 
 export function serializeInvitationPayload(data = {}, slug) {
   const sections = data.sections || {};
+  const venueInput = {
+    venueName: firstText(data.venueName, data.venue?.name),
+    venueAddress: firstText(data.venueAddress, data.locationDescription, data.venue?.address),
+    latitude: firstValue(data.latitude, data.mapsLat, data.venue?.latitude, data.venue?.lat),
+    longitude: firstValue(data.longitude, data.mapsLng, data.venue?.longitude, data.venue?.lng),
+    googlePlaceId: firstText(data.googlePlaceId, data.venue?.placeId),
+    mapsLink: firstText(data.mapsLink, data.venue?.mapUrl),
+  };
+  const venueValidation = validateVenueData(venueInput);
+  const normalizedVenue = venueValidation.data;
+  const navigationUrl = getNavigationUrl({ ...venueInput, ...normalizedVenue });
   const menuItems = Array.isArray(data.menu)
     ? data.menu
         .filter((item) => item && (item.name || item.title || item.category || item.description))
@@ -78,15 +91,16 @@ export function serializeInvitationPayload(data = {}, slug) {
       images: Array.isArray(data.gallery?.images) ? data.gallery.images : [],
     },
     venue: {
-      name: firstText(data.venueName, data.venue?.name),
-      address: firstText(data.locationDescription, data.venue?.address),
+      name: normalizedVenue.venueName || firstText(data.venueName, data.venue?.name),
+      address: normalizedVenue.venueAddress || firstText(data.locationDescription, data.venue?.address),
       ceremonyTime: firstText(data.ceremonyTime, data.venue?.ceremonyTime),
       receptionTime: firstText(data.receptionTime, data.venue?.receptionTime),
       image: firstText(data.venueImage, data.venue?.image),
-      mapUrl: firstText(data.mapsLink, data.venue?.mapUrl),
-      mapLat: firstValue(data.mapsLat, data.venue?.lat),
-      mapLng: firstValue(data.mapsLng, data.venue?.lng),
+      mapUrl: navigationUrl,
+      mapLat: normalizedVenue.latitude ?? firstValue(data.mapsLat, data.venue?.lat),
+      mapLng: normalizedVenue.longitude ?? firstValue(data.mapsLng, data.venue?.lng),
       parkingInfo: firstText(data.parkingInfo, data.venue?.parkingInfo),
+      placeId: normalizedVenue.googlePlaceId || firstText(data.googlePlaceId, data.venue?.placeId),
     },
     // timeline: keep the new nested object shape but also expose a
     // plain array on `timeline` (many templates check Array.isArray).

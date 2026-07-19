@@ -65,10 +65,6 @@ function firstText(...candidates) {
   return '';
 }
 
-function isFiniteCoordinate(value) {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
 /**
  * The couple's own pasted share link always wins. Falls back to a
  * plain Google Maps query URL built from `mapsLat`/`mapsLng` — both
@@ -77,16 +73,15 @@ function isFiniteCoordinate(value) {
  * map" rather than a broken/empty link.
  */
 function resolveMapHref(data) {
-  const link = firstText(data?.mapsLink);
-  if (link) return link;
+  const navigationUrl = getMapsNavigationUrl({
+    venueName: firstText(data?.venueName),
+    venueAddress: firstText(data?.locationDescription),
+    latitude: data?.mapsLat,
+    longitude: data?.mapsLng,
+    mapsLink: firstText(data?.mapsLink),
+  });
 
-  const lat = data?.mapsLat;
-  const lng = data?.mapsLng;
-  if (isFiniteCoordinate(lat) && isFiniteCoordinate(lng)) {
-    return `https://www.google.com/maps?q=${lat},${lng}`;
-  }
-
-  return '';
+  return navigationUrl;
 }
 
 /**
@@ -94,7 +89,8 @@ function resolveMapHref(data) {
  * an icon font/image. Same gradient-shaded inline-SVG technique
  * `OpeningScene.jsx` already uses for the two rings.
  */
-import normalizeExternalUrl from '../../../../lib/normalizeUrl';
+import normalizeExternalUrl from '../../../../lib/normalizeUrl.js';
+import { getMapsNavigationUrl } from '../../../../lib/mapService.js';
 
 function VenuePin({ className }) {
   return (
@@ -161,7 +157,7 @@ export default function Venue({ data }) {
             )}
 
             {mapHref && (
-              <a className="gp-venue__map" href={normalizeExternalUrl(mapHref)} target="_blank" rel="noopener noreferrer">
+              <a className="gp-venue__map" href={normalizeExternalUrl(mapHref)} target="_self" rel="noopener noreferrer">
                 <VenuePin className="gp-venue__map-icon" />
                 <span>{t.openMap}</span>
               </a>

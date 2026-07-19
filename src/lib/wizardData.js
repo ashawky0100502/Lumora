@@ -5,6 +5,7 @@
  * and every guest/couple view that reads it.
  */
 import { compressImage } from './imageCompress';
+import { normalizeVenueData } from './mapService.js';
 
 export function createInitialInvData() {
   return {
@@ -25,6 +26,10 @@ export function createInitialInvData() {
     bioGroom: '',
     bioBride: '',
     venueName: '',
+    venueAddress: '',
+    latitude: null,
+    longitude: null,
+    googlePlaceId: '',
     mapsLink: '',
     mapsLat: null,
     mapsLng: null,
@@ -80,11 +85,10 @@ export function slugify(str) {
 
 /** Pulls lat/lng out of the common Google Maps URL shapes, when possible. */
 export function parseMapsLink(url) {
-  if (!url) return null;
-  let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (!m) m = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (!m) m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  const parsed = normalizeVenueData({ mapsLink: url });
+  if (parsed.latitude !== null && parsed.longitude !== null) {
+    return { lat: parsed.latitude, lng: parsed.longitude };
+  }
   return null;
 }
 

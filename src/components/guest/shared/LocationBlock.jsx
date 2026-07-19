@@ -1,35 +1,14 @@
 import { GuestCard, SectionHeading, GuestButton } from './GuestUI';
 import Reveal from './Reveal';
-
-// Turns whatever the couple pasted into StepLocation into something that
-// can actually render inside an <iframe> — a raw Google Maps share link
-// isn't embeddable as-is, so this pulls the most reliable thing out of
-// what we have: literal coordinates if the share link contains them
-// (most do, as an "@lat,lng,zoom" segment), otherwise the venue name/
-// address as a text query. No API key needed — maps.google.com's
-// `output=embed` works unauthenticated for this.
-function buildMapEmbedSrc({ mapsLink, venueName, locationDescription }) {
-  if (mapsLink) {
-    const coordMatch = mapsLink.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
-    if (coordMatch) {
-      const [, lat, lng] = coordMatch;
-      return `https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
-    }
-  }
-  const query = [venueName, locationDescription].filter(Boolean).join(', ');
-  if (query) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
-  }
-  if (mapsLink) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(mapsLink)}&output=embed`;
-  }
-  return null;
-}
+import normalizeExternalUrl from '../../../lib/normalizeUrl.js';
+import { getMapEmbedUrl, getMapsNavigationUrl, normalizeVenueData } from '../../../lib/mapService.js';
 
 export default function LocationBlock({ theme, venueName, locationDescription, parkingInfo, mapsLink, t }) {
   if (!venueName && !mapsLink) return null;
 
-  const embedSrc = buildMapEmbedSrc({ mapsLink, venueName, locationDescription });
+  const normalized = normalizeVenueData({ venueName, venueAddress: locationDescription, mapsLink });
+  const navigationUrl = getMapsNavigationUrl({ ...normalized, mapsLink });
+  const embedSrc = getMapEmbedUrl({ ...normalized, mapsLink, venueName, venueAddress: locationDescription });
 
   return (
     <Reveal theme={theme} className="mx-auto w-full max-w-lg px-5">
@@ -63,8 +42,8 @@ export default function LocationBlock({ theme, venueName, locationDescription, p
             />
           </div>
         )}
-        {mapsLink && (
-          <a href={normalizeExternalUrl(mapsLink)} target="_blank" rel="noopener noreferrer">
+        {navigationUrl && (
+          <a href={normalizeExternalUrl(navigationUrl)} target="_self" rel="noopener noreferrer">
             <GuestButton theme={theme}>{t.openMap}</GuestButton>
           </a>
         )}

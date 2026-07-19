@@ -34,10 +34,10 @@ test('normalizes canonical builder fields for Aurora sections', () => {
 
   assert.equal(payload.names.coupleName, 'Noor & Lina');
   assert.equal(payload.hero.subtitle, 'Please join us for a private celebration');
-  assert.equal(payload.gallery.images[0].src, 'engagement-1.png');
+  assert.equal(payload.gallery.images.length, 0);
   assert.equal(payload.gallery.title, '');
   assert.equal(payload.venue.name, 'The Palace');
-  assert.equal(payload.venue.mapUrl, 'https://maps.google.com/?q=The+Palace');
+  assert.equal(payload.venue.mapUrl, 'https://www.google.com/maps/search/?api=1&query=30.1,31.2');
   assert.equal(payload.venue.parkingInfo, 'Valet available');
   assert.equal(payload.menu.items[0].title, 'Appetizer');
   assert.equal(payload.quran.verseArabic, 'وَإِذَا سَأَلَكَ');

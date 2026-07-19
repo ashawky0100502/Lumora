@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Field, StepHeading, StepActions, stepMotion } from '../ui';
-import { parseMapsLink } from '../../../../lib/wizardData';
+import { getMapEmbedUrl, getNavigationUrl, normalizeVenueData } from '../../../../lib/mapService.js';
 import { sfxClick } from '../../../../lib/sfx';
 
 function TimelineRow({ item, onChange, onRemove }) {
@@ -40,11 +40,32 @@ function TimelineRow({ item, onChange, onRemove }) {
 }
 
 export default function StepLocation({ data, update, onNext, onBack, onSkip }) {
-  const coords = parseMapsLink(data.mapsLink);
+  const venueData = normalizeVenueData(data);
+  const coords = venueData.latitude !== null && venueData.longitude !== null
+    ? { lat: venueData.latitude, lng: venueData.longitude }
+    : null;
+  const embedSrc = coords
+    ? `https://www.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed`
+    : getMapEmbedUrl({
+        mapsLink: data.mapsLink,
+        venueName: data.venueName,
+        venueAddress: data.venueAddress,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
 
   function handleMapsLinkChange(url) {
-    const parsed = parseMapsLink(url);
-    update({ mapsLink: url, mapsLat: parsed?.lat ?? null, mapsLng: parsed?.lng ?? null });
+    const parsed = normalizeVenueData({ ...data, mapsLink: url });
+    const navigationUrl = getNavigationUrl({ ...parsed, mapsLink: url });
+    update({
+      mapsLink: navigationUrl || url,
+      mapsLat: parsed.latitude ?? null,
+      mapsLng: parsed.longitude ?? null,
+      latitude: parsed.latitude ?? null,
+      longitude: parsed.longitude ?? null,
+      venueAddress: parsed.venueAddress,
+      googlePlaceId: parsed.googlePlaceId,
+    });
   }
 
   function updateTimeline(i, item) {
@@ -88,7 +109,7 @@ export default function StepLocation({ data, update, onNext, onBack, onSkip }) {
             title="venue-preview"
             loading="lazy"
             className="h-full w-full border-0"
-            src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed`}
+            src={embedSrc}
           />
         </motion.div>
       )}

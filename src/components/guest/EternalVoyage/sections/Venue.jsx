@@ -1,6 +1,7 @@
 import useScrollReveal from './lib/useScrollReveal';
 import { firstText } from './lib/builderData';
-import normalizeExternalUrl from '../../../../lib/normalizeUrl';
+import normalizeExternalUrl from '../../../../lib/normalizeUrl.js';
+import { getMapsNavigationUrl } from '../../../../lib/mapService.js';
 
 /**
  * ETERNAL VOYAGE — Venue section (premium cinematic pass).
@@ -32,17 +33,24 @@ function resolveVenue(data) {
   const address = firstText(
     source.address,
     typeof source.location === 'string' ? source.location : '',
+    data?.venueAddress,
     data?.locationDescription
   );
   const note = firstText(source.note, source.notes, source.description, data?.parkingInfo);
-  const mapUrl = firstText(
-    source.mapUrl,
-    source.mapLink,
-    source.googleMapsUrl,
-    typeof source.map === 'string' ? source.map : '',
-    data?.mapUrl,
-    data?.mapsLink
-  );
+  const mapUrl = getMapsNavigationUrl({
+    venueName: name,
+    venueAddress: address,
+    latitude: firstText(data?.latitude, data?.mapsLat, source?.latitude, source?.lat),
+    longitude: firstText(data?.longitude, data?.mapsLng, source?.longitude, source?.lng),
+    mapsLink: firstText(
+      source.mapUrl,
+      source.mapLink,
+      source.googleMapsUrl,
+      typeof source.map === 'string' ? source.map : '',
+      data?.mapUrl,
+      data?.mapsLink
+    ),
+  });
 
   return { name, address, note, mapUrl };
 }
@@ -89,7 +97,7 @@ export default function Venue({ data }) {
             <a
               className="ev-venue__map-btn"
               href={normalizeExternalUrl(mapUrl)}
-              target="_blank"
+              target="_self"
               rel="noopener noreferrer"
             >
               View on Map

@@ -1,3 +1,5 @@
+import { getNavigationUrl } from '../../../../../lib/mapService.js';
+
 function firstText(...values) {
   for (const value of values) {
     if (typeof value === 'string' && value.trim()) return value.trim();
@@ -219,13 +221,19 @@ export function normalizeAuroraPayload(raw = {}) {
     },
     venue: {
       name: firstText(raw?.venueName, builder?.venueName, raw?.venue?.name, builder?.venue?.name) || '',
-      address: firstText(raw?.locationDescription, builder?.locationDescription, raw?.venue?.address, builder?.venue?.address) || '',
+      address: firstText(raw?.venueAddress, builder?.venueAddress, raw?.locationDescription, builder?.locationDescription, raw?.venue?.address, builder?.venue?.address) || '',
       ceremonyTime: firstText(raw?.ceremonyTime, raw?.venue?.ceremonyTime, builder?.venue?.ceremonyTime, builder?.venue?.ceremony) || '',
       receptionTime: firstText(raw?.receptionTime, raw?.venue?.receptionTime, builder?.venue?.receptionTime, builder?.venue?.reception) || '',
       image: firstText(raw?.venueImage, raw?.venue?.image, raw?.venue?.coverImage, builder?.venue?.image, builder?.venue?.coverImage) || '',
-      mapUrl: firstText(raw?.mapsLink, builder?.mapsLink, raw?.venue?.mapUrl, builder?.venue?.mapUrl, raw?.venue?.googleMapsUrl, builder?.venue?.googleMapsUrl) || '',
-      mapLat: firstValue(raw?.mapsLat, builder?.mapsLat, raw?.venue?.lat, builder?.venue?.lat),
-      mapLng: firstValue(raw?.mapsLng, builder?.mapsLng, raw?.venue?.lng, builder?.venue?.lng),
+      mapUrl: getNavigationUrl({
+        venueName: firstText(raw?.venueName, builder?.venueName, raw?.venue?.name, builder?.venue?.name),
+        venueAddress: firstText(raw?.venueAddress, builder?.venueAddress, raw?.locationDescription, builder?.locationDescription, raw?.venue?.address, builder?.venue?.address),
+        latitude: firstValue(raw?.latitude, builder?.latitude, raw?.mapsLat, builder?.mapsLat, raw?.venue?.latitude, builder?.venue?.latitude, raw?.venue?.lat, builder?.venue?.lat),
+        longitude: firstValue(raw?.longitude, builder?.longitude, raw?.mapsLng, builder?.mapsLng, raw?.venue?.longitude, builder?.venue?.longitude, raw?.venue?.lng, builder?.venue?.lng),
+        mapsLink: firstText(raw?.mapsLink, builder?.mapsLink, raw?.venue?.mapUrl, builder?.venue?.mapUrl, raw?.venue?.googleMapsUrl, builder?.venue?.googleMapsUrl),
+      }) || '',
+      mapLat: firstValue(raw?.latitude, builder?.latitude, raw?.mapsLat, builder?.mapsLat, raw?.venue?.latitude, builder?.venue?.latitude, raw?.venue?.lat, builder?.venue?.lat),
+      mapLng: firstValue(raw?.longitude, builder?.longitude, raw?.mapsLng, builder?.mapsLng, raw?.venue?.longitude, builder?.venue?.longitude, raw?.venue?.lng, builder?.venue?.lng),
       parkingInfo: firstText(raw?.parkingInfo, builder?.parkingInfo, raw?.venue?.parkingInfo, builder?.venue?.parking) || '',
     },
     menu: {

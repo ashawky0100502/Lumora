@@ -37,7 +37,8 @@ function resolveActions(data) {
   };
 }
 
-import normalizeExternalUrl from '../../../../../../lib/normalizeUrl';
+import normalizeExternalUrl from '../../../../../../lib/normalizeUrl.js';
+import { getMapsNavigationUrl, getNavigationUrl } from '../../../../../../lib/mapService.js';
 
 export default function AuroraFooter({ data = {} }) {
   const prefersReducedMotion = useReducedMotion();
@@ -86,13 +87,17 @@ export default function AuroraFooter({ data = {} }) {
 
   const handleLocation = (event) => {
     event.preventDefault();
-    const locationUrl = firstText(data?.venue?.mapUrl);
-    const fallbackUrl = venue ? `https://www.google.com/maps?q=${encodeURIComponent(venue)}` : '';
-    const targetUrl = locationUrl || fallbackUrl;
+    const locationUrl = getMapsNavigationUrl({
+      venueName: firstText(data?.venue?.name, venue),
+      venueAddress: firstText(data?.venue?.address, data?.locationDescription),
+      latitude: data?.venue?.mapLat ?? data?.mapsLat,
+      longitude: data?.venue?.mapLng ?? data?.mapsLng,
+      mapsLink: firstText(data?.venue?.mapUrl, data?.mapsLink),
+    });
 
-    const safe = normalizeExternalUrl(targetUrl);
+    const safe = normalizeExternalUrl(locationUrl);
     if (safe) {
-      window.open(safe, '_blank', 'noopener,noreferrer');
+      window.location.assign(safe);
     }
   };
 

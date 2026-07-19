@@ -2,7 +2,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import '../../debugRender';
 import './venue.css';
-import normalizeExternalUrl from '../../../../../../lib/normalizeUrl';
+import normalizeExternalUrl from '../../../../../../lib/normalizeUrl.js';
+import { getMapEmbedUrl, getMapsNavigationUrl, getNavigationUrl } from '../../../../../../lib/mapService.js';
 
 function normalizeVenue(data) {
   return {
@@ -18,38 +19,14 @@ function normalizeVenue(data) {
   };
 }
 
-function buildMapEmbedUrl(mapUrl, lat, lng) {
-  const raw = typeof mapUrl === 'string' ? mapUrl.trim() : '';
-  const candidates = [];
-
-  if (typeof lat === 'number' && typeof lng === 'number') {
-    candidates.push(`${lat},${lng}`);
-  }
-
-  if (raw) {
-    if (/output=embed/i.test(raw)) return raw;
-
-    try {
-      const parsed = new URL(raw);
-      const q = parsed.searchParams.get('q');
-      const ll = parsed.searchParams.get('ll');
-      if (q) candidates.push(q);
-      if (ll) candidates.push(ll);
-    } catch {
-      // keep going without throwing
-    }
-
-    const fromCoords = raw.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i);
-    if (fromCoords) candidates.push(`${fromCoords[1]},${fromCoords[2]}`);
-
-    const fromSearch = raw.match(/[?&](?:q|query)=([^&]+)/i);
-    if (fromSearch) candidates.push(decodeURIComponent(fromSearch[1]));
-  }
-
-  const query = candidates.find(Boolean);
-  if (!query) return '';
-
-  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+function buildMapEmbedUrl(mapUrl, lat, lng, venueName, address) {
+  return getMapEmbedUrl({
+    venueName,
+    venueAddress: address,
+    latitude: lat,
+    longitude: lng,
+    mapsLink: mapUrl,
+  });
 }
 
 export default function AuroraVenue({ data = {} }) {
@@ -61,7 +38,7 @@ export default function AuroraVenue({ data = {} }) {
   const venue = useMemo(() => normalizeVenue(data), [data]);
   const hasImage = Boolean(venue.image);
   const hasMap = Boolean(venue.mapUrl || venue.mapLat || venue.mapLng);
-  const embedMapUrl = useMemo(() => buildMapEmbedUrl(venue.mapUrl, venue.mapLat, venue.mapLng), [venue.mapUrl, venue.mapLat, venue.mapLng]);
+  const embedMapUrl = useMemo(() => buildMapEmbedUrl(venue.mapUrl, venue.mapLat, venue.mapLng, venue.name, venue.address), [venue.mapUrl, venue.mapLat, venue.mapLng, venue.name, venue.address]);
 
   const handleCopyAddress = async () => {
     try {
@@ -80,7 +57,21 @@ export default function AuroraVenue({ data = {} }) {
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`, '_blank', 'noopener,noreferrer');
   };
 
-  const mapUrl = venue.mapUrl;
+  const mapUrl = getNavigationUrl({
+    venueName: venue.name,
+    venueAddress: venue.address,
+    latitude: venue.mapLat,
+    longitude: venue.mapLng,
+    mapsLink: venue.mapUrl,
+  });
+
+  const mobileMapUrl = getMapsNavigationUrl({
+    venueName: venue.name,
+    venueAddress: venue.address,
+    latitude: venue.mapLat,
+    longitude: venue.mapLng,
+    mapsLink: venue.mapUrl,
+  });
 
   return (
     <section className="aurora-venue" aria-labelledby="aurora-venue-title">
@@ -138,7 +129,7 @@ export default function AuroraVenue({ data = {} }) {
               </div>
 
               <div className="aurora-venue__actions">
-                {mapUrl ? <a className="aurora-venue__button" href={normalizeExternalUrl(mapUrl)} target="_blank" rel="noreferrer">Open in Google Maps</a> : null}
+                {mobileMapUrl ? <a className="aurora-venue__button" href={normalizeExternalUrl(mobileMapUrl)} target="_self" rel="noopener noreferrer">Open in Google Maps</a> : null}
                 <button type="button" className="aurora-venue__button" onClick={handleCopyAddress}>{copied ? 'Address copied' : 'Copy Address'}</button>
                 <button type="button" className="aurora-venue__button" onClick={handleAddToCalendar}>Add to Calendar</button>
               </div>
