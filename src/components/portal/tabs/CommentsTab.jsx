@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GuestCard, GuestInput, GuestButton } from '../../guest/shared/GuestUI';
 import ReactionTray from '../../guest/shared/Reactions';
@@ -83,7 +83,10 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted 
 }
 
 export default function CommentsTab({ theme, t, lang, slug, code, comments, onCommentsChange }) {
-  const [visibleCount, setVisibleCount] = useState(20);
+  const commentsPerPage = 3;
+  const [currentPage, setCurrentPage] = useState(0);
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState('auto');
 
   function handleReplied(id, reply) {
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, reply, replied_at: new Date().toISOString() } : c)));
@@ -93,13 +96,30 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, reactions } : c)));
   }
 
-  // All comments are still fetched (so unread badges/notifications stay
-  // accurate — the couple should always know someone commented), but only
-  // a window of them is mounted to the DOM at once. Comments are already
-  // newest-first, so this always shows the most recent ones; tapping
-  // "load more" grows the window from data already in memory, no extra
-  // network round-trip.
-  const visible = comments ? comments.slice(0, visibleCount) : [];
+  // Measure and update container height whenever page changes
+  useEffect(() => {
+    if (containerRef.current) {
+      const height = containerRef.current.scrollHeight;
+      setContainerHeight(height);
+    }
+  }, [currentPage]);
+
+  const totalComments = comments?.length ?? 0;
+  const totalPages = Math.ceil(totalComments / commentsPerPage) || 1;
+  const startIdx = currentPage * commentsPerPage;
+  const endIdx = startIdx + commentsPerPage;
+  const visible = comments ? comments.slice(startIdx, endIdx) : [];
+
+  const isFirstPage = currentPage === 0;
+  const isLastPage = currentPage >= totalPages - 1;
+
+  function handlePrevious() {
+    if (!isFirstPage) setCurrentPage((p) => p - 1);
+  }
+
+  function handleNext() {
+    if (!isLastPage) setCurrentPage((p) => p + 1);
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -114,22 +134,69 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
         <div className="py-10 text-center text-[0.85rem] italic" style={{ color: theme.inkSoft, fontFamily: theme.bodyFont }}>{t.comments.empty}</div>
       ) : (
         <div className="flex flex-col gap-3">
-          <AnimatePresence initial={false}>
-            {visible.map((c) => (
-              <motion.div key={c.id ?? c.created_at} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-                <CommentRow theme={theme} t={t} lang={lang} slug={slug} code={code} comment={c} onReplied={handleReplied} onReacted={handleReacted} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {comments.length > visibleCount && (
-            <button
-              type="button"
-              onClick={() => setVisibleCount((v) => v + 20)}
-              className="mx-auto mt-1 rounded-full px-5 py-2 text-[0.78rem]"
-              style={{ background: `rgba(${theme.accentRgb},0.1)`, color: theme.accent, fontFamily: theme.uiFont }}
-            >
-              {t.comments.loadMore || 'Show more'}
-            </button>
+          <motion.div
+            animate={{ height: containerHeight }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div ref={containerRef} className="flex flex-col gap-3">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col gap-3"
+                >
+                  {visible.map((c) => (
+                    <motion.div key={c.id ?? c.created_at} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
+                      <CommentRow theme={theme} t={t} lang={lang} slug={slug} code={code} comment={c} onReplied={handleReplied} onReacted={handleReacted} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={isFirstPage}
+                className="rounded-full px-4 py-2 text-[0.78rem] transition-opacity"
+                style={{
+                  background: `rgba(${theme.accentRgb},0.1)`,
+                  color: isFirstPage ? theme.inkSoft : theme.accent,
+                  opacity: isFirstPage ? 0.5 : 1,
+                  cursor: isFirstPage ? 'not-allowed' : 'pointer',
+                  fontFamily: theme.uiFont,
+                }}
+              >
+                ← {t.comments.previous || 'Previous'}
+              </button>
+
+              <span className="text-[0.75rem]" style={{ color: theme.inkSoft, fontFamily: theme.uiFont }}>
+                {currentPage + 1} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isLastPage}
+                className="rounded-full px-4 py-2 text-[0.78rem] transition-opacity"
+                style={{
+                  background: `rgba(${theme.accentRgb},0.1)`,
+                  color: isLastPage ? theme.inkSoft : theme.accent,
+                  opacity: isLastPage ? 0.5 : 1,
+                  cursor: isLastPage ? 'not-allowed' : 'pointer',
+                  fontFamily: theme.uiFont,
+                }}
+              >
+                {t.comments.next || 'Next'} →
+              </button>
+            </div>
           )}
         </div>
       )}
