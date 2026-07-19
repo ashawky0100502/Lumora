@@ -34,25 +34,10 @@ test('normalizes structured venue data without relying on the raw URL', () => {
   assert.equal(data.googlePlaceId, 'ChIJexample');
 });
 
-test('prefers a geo intent URI on Android so the Maps app opens the venue directly', () => {
-  const originalNavigator = globalThis.navigator;
-  Object.defineProperty(globalThis, 'navigator', {
-    value: { userAgent: 'Mozilla/5.0 (Linux; Android 14)' },
-    configurable: true,
-    writable: true,
+test('returns the canonical Google Maps search URL for address-based navigation', () => {
+  const url = getMapsNavigationUrl({
+    venueAddress: 'Cairo, Egypt',
   });
 
-  try {
-    const url = getMapsNavigationUrl({
-      venueAddress: 'Cairo, Egypt',
-    });
-
-    assert.equal(url, 'geo:0,0?q=Cairo%2C%20Egypt');
-  } finally {
-    Object.defineProperty(globalThis, 'navigator', {
-      value: originalNavigator,
-      configurable: true,
-      writable: true,
-    });
-  }
+  assert.equal(url, 'https://www.google.com/maps/search/?api=1&query=Cairo%2C%20Egypt');
 });

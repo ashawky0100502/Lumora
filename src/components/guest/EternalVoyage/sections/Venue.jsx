@@ -97,7 +97,7 @@ export default function Venue({ data }) {
             <a
               className="ev-venue__map-btn"
               href={normalizeExternalUrl(mapUrl)}
-              target="_self"
+              target="_blank"
               rel="noopener noreferrer"
             >
               View on Map

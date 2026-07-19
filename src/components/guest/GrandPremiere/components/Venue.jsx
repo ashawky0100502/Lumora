@@ -157,7 +157,7 @@ export default function Venue({ data }) {
             )}
 
             {mapHref && (
-              <a className="gp-venue__map" href={normalizeExternalUrl(mapHref)} target="_self" rel="noopener noreferrer">
+              <a className="gp-venue__map" href={normalizeExternalUrl(mapHref)} target="_blank" rel="noopener noreferrer">
                 <VenuePin className="gp-venue__map-icon" />
                 <span>{t.openMap}</span>
               </a>

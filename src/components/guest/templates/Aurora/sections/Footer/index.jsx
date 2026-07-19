@@ -38,7 +38,7 @@ function resolveActions(data) {
 }
 
 import normalizeExternalUrl from '../../../../../../lib/normalizeUrl.js';
-import { getMapsNavigationUrl, getNavigationUrl } from '../../../../../../lib/mapService.js';
+import { getMapsNavigationUrl } from '../../../../../../lib/mapService.js';
 
 export default function AuroraFooter({ data = {} }) {
   const prefersReducedMotion = useReducedMotion();
@@ -85,21 +85,15 @@ export default function AuroraFooter({ data = {} }) {
     }
   };
 
-  const handleLocation = (event) => {
-    event.preventDefault();
-    const locationUrl = getMapsNavigationUrl({
-      venueName: firstText(data?.venue?.name, venue),
-      venueAddress: firstText(data?.venue?.address, data?.locationDescription),
-      latitude: data?.venue?.mapLat ?? data?.mapsLat,
-      longitude: data?.venue?.mapLng ?? data?.mapsLng,
-      mapsLink: firstText(data?.venue?.mapUrl, data?.mapsLink),
-    });
+  const locationUrl = getMapsNavigationUrl({
+    venueName: firstText(data?.venue?.name, venue),
+    venueAddress: firstText(data?.venue?.address, data?.locationDescription),
+    latitude: data?.venue?.mapLat ?? data?.mapsLat,
+    longitude: data?.venue?.mapLng ?? data?.mapsLng,
+    mapsLink: firstText(data?.venue?.mapUrl, data?.mapsLink),
+  });
 
-    const safe = normalizeExternalUrl(locationUrl);
-    if (safe) {
-      window.location.assign(safe);
-    }
-  };
+  const safeLocationUrl = normalizeExternalUrl(locationUrl);
 
   return (
     <footer className="aurora-footer" aria-label="Closing message">
@@ -146,10 +140,10 @@ export default function AuroraFooter({ data = {} }) {
                 Share Invitation
               </button>
             ) : null}
-            {actions.location ? (
-              <button type="button" className="aurora-footer__action" onClick={handleLocation}>
+            {actions.location && safeLocationUrl ? (
+              <a className="aurora-footer__action" href={safeLocationUrl} target="_blank" rel="noopener noreferrer">
                 Open Location
-              </button>
+              </a>
             ) : null}
           </div>
 

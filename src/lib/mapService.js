@@ -132,6 +132,10 @@ export function validateVenueData(input = {}) {
 }
 
 export function getNavigationUrl(input = {}) {
+  return getMapsNavigationUrl(input);
+}
+
+export function getMapsNavigationUrl(input = {}) {
   const normalized = normalizeVenueData(input);
 
   if (normalized.latitude !== null && normalized.longitude !== null) {
@@ -142,24 +146,7 @@ export function getNavigationUrl(input = {}) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(normalized.venueAddress)}`;
   }
 
-  const fallbackUrl = normalizeText(input.mapsLink || input.googleMapsUrl || input.mapUrl || '');
-  return fallbackUrl || '';
-}
-
-export function getMapsNavigationUrl(input = {}) {
-  const normalized = normalizeVenueData(input);
-
-  if (normalized.latitude !== null && normalized.longitude !== null) {
-    return `geo:${normalized.latitude},${normalized.longitude}`;
-  }
-
-  if (normalized.venueAddress) {
-    const encodedQuery = encodeURIComponent(normalized.venueAddress);
-    return `geo:0,0?q=${encodedQuery}`;
-  }
-
-  const fallbackUrl = normalizeText(input.mapsLink || input.googleMapsUrl || input.mapUrl || '');
-  return normalizeText(fallbackUrl);
+  return '';
 }
 
 export function getMapEmbedUrl(input = {}) {
@@ -173,9 +160,7 @@ export function getMapEmbedUrl(input = {}) {
     return `https://www.google.com/maps?q=${encodeURIComponent(normalized.venueAddress)}&output=embed`;
   }
 
-  const fallbackUrl = normalizeText(input.mapsLink || input.googleMapsUrl || input.mapUrl || '');
-  if (!fallbackUrl) return '';
-  return `https://www.google.com/maps?q=${encodeURIComponent(fallbackUrl)}&output=embed`;
+  return '';
 }
 
 export default {

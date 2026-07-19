@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import '../../debugRender';
 import './venue.css';
 import normalizeExternalUrl from '../../../../../../lib/normalizeUrl.js';
-import { getMapEmbedUrl, getMapsNavigationUrl, getNavigationUrl } from '../../../../../../lib/mapService.js';
+import { getMapEmbedUrl, getMapsNavigationUrl } from '../../../../../../lib/mapService.js';
 
 function normalizeVenue(data) {
   return {
@@ -57,15 +57,7 @@ export default function AuroraVenue({ data = {} }) {
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`, '_blank', 'noopener,noreferrer');
   };
 
-  const mapUrl = getNavigationUrl({
-    venueName: venue.name,
-    venueAddress: venue.address,
-    latitude: venue.mapLat,
-    longitude: venue.mapLng,
-    mapsLink: venue.mapUrl,
-  });
-
-  const mobileMapUrl = getMapsNavigationUrl({
+  const mapUrl = getMapsNavigationUrl({
     venueName: venue.name,
     venueAddress: venue.address,
     latitude: venue.mapLat,
@@ -129,7 +121,7 @@ export default function AuroraVenue({ data = {} }) {
               </div>
 
               <div className="aurora-venue__actions">
-                {mobileMapUrl ? <a className="aurora-venue__button" href={normalizeExternalUrl(mobileMapUrl)} target="_self" rel="noopener noreferrer">Open in Google Maps</a> : null}
+                {mapUrl ? <a className="aurora-venue__button" href={normalizeExternalUrl(mapUrl)} target="_blank" rel="noopener noreferrer">Open in Google Maps</a> : null}
                 <button type="button" className="aurora-venue__button" onClick={handleCopyAddress}>{copied ? 'Address copied' : 'Copy Address'}</button>
                 <button type="button" className="aurora-venue__button" onClick={handleAddToCalendar}>Add to Calendar</button>
               </div>

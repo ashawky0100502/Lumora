@@ -43,7 +43,7 @@ export default function LocationBlock({ theme, venueName, locationDescription, p
           </div>
         )}
         {navigationUrl && (
-          <a href={normalizeExternalUrl(navigationUrl)} target="_self" rel="noopener noreferrer">
+          <a href={normalizeExternalUrl(navigationUrl)} target="_blank" rel="noopener noreferrer">
             <GuestButton theme={theme}>{t.openMap}</GuestButton>
           </a>
         )}
