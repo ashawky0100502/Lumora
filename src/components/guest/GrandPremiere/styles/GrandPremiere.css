@@ -4118,9 +4118,11 @@
 .gp-message__field {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 0.5rem;
   text-align: start;
+  width: 100%;
+  max-width: 100%;
 }
 
 .gp-message__field-label {
@@ -4149,6 +4151,12 @@
   resize: none;
   line-height: 1.6;
   font-style: italic;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  align-self: stretch;
 }
 
 .gp-message__input::placeholder {
