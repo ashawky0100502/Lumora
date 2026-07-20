@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GuestCard, GuestInput, GuestButton } from '../../guest/shared/GuestUI';
 import ReactionTray from '../../guest/shared/Reactions';
@@ -69,7 +69,7 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
   }
 
   return (
-    <GuestCard theme={theme} className="!p-5">
+    <GuestCard theme={theme} className="!p-5 w-full">
       <div className="flex items-start gap-3">
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.7rem]"
@@ -152,8 +152,6 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
 export default function CommentsTab({ theme, t, lang, slug, code, comments, onCommentsChange }) {
   const commentsPerPage = 3;
   const [currentPage, setCurrentPage] = useState(0);
-  const containerRef = useRef(null);
-  const [containerHeight, setContainerHeight] = useState('auto');
 
   function handleReplied(id, reply) {
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, reply, replied_at: new Date().toISOString() } : c)));
@@ -171,14 +169,6 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
   function handleThankYouSaved(id, thankYou) {
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, thank_you: thankYou } : c)));
   }
-
-  // Measure and update container height whenever page changes
-  useEffect(() => {
-    if (containerRef.current) {
-      const height = containerRef.current.scrollHeight;
-      setContainerHeight(height);
-    }
-  }, [currentPage]);
 
   // Group comments into parent comments with their replies
   // A comment is a "parent" if it appears in the original flat list
@@ -214,41 +204,36 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
         <div className="py-10 text-center text-[0.85rem] italic" style={{ color: theme.inkSoft, fontFamily: theme.bodyFont }}>{t.comments.empty}</div>
       ) : (
         <div className="flex flex-col gap-3">
-          <motion.div
-            animate={{ height: containerHeight }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div ref={containerRef} className="flex flex-col gap-3">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPage}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex flex-col gap-3"
-                >
-                  {visible.map((c) => (
-                    <motion.div key={c.id ?? c.created_at} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-                      <CommentRow
-                        theme={theme}
-                        t={t}
-                        lang={lang}
-                        slug={slug}
-                        code={code}
-                        comment={c}
-                        onReplied={handleReplied}
-                        onReacted={handleReacted}
-                        onPinned={handlePinned}
-                        onThankYouSaved={handleThankYouSaved}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </motion.div>
+          <div className="flex flex-col gap-3" style={{ overflow: 'visible' }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPage}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex w-full flex-col gap-3"
+                style={{ overflow: 'visible' }}
+              >
+                {visible.map((c) => (
+                  <motion.div key={c.id ?? c.created_at} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+                    <CommentRow
+                      theme={theme}
+                      t={t}
+                      lang={lang}
+                      slug={slug}
+                      code={code}
+                      comment={c}
+                      onReplied={handleReplied}
+                      onReacted={handleReacted}
+                      onPinned={handlePinned}
+                      onThankYouSaved={handleThankYouSaved}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-center gap-3">
