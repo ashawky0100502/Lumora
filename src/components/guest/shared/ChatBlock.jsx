@@ -165,10 +165,19 @@ export default function ChatBlock({ theme, slug, lang, t, coupleNames }) {
                 </AnimatePresence>
               </div>
 
-              <form onSubmit={handleSend} className="flex gap-2">
+              <form onSubmit={handleSend} className="flex items-end gap-2">
                 <EmojiPickerButton theme={theme} onPick={(e) => setText((prev) => prev + e)} />
-                <GuestInput theme={theme} placeholder={t.placeholder} value={text} onChange={(e) => setText(e.target.value)} />
-                <GuestButton theme={theme} type="submit" disabled={busy} style={{ padding: '10px 20px' }}>
+                <div className="min-w-0 flex-1">
+                  <GuestInput
+                    theme={theme}
+                    placeholder={t.placeholder}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="w-full"
+                    style={{ minWidth: 0 }}
+                  />
+                </div>
+                <GuestButton theme={theme} type="submit" disabled={busy} style={{ padding: '10px 18px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {t.send}
                 </GuestButton>
               </form>
