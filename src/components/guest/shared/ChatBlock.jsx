@@ -174,7 +174,7 @@ export default function ChatBlock({ theme, slug, lang, t, coupleNames }) {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     className="w-full"
-                    style={{ minWidth: 0, width: '100%' }}
+                    style={{ minWidth: 0 }}
                   />
                 </div>
                 <GuestButton theme={theme} type="submit" disabled={busy} style={{ padding: '10px 18px', flexShrink: 0, whiteSpace: 'nowrap' }}>

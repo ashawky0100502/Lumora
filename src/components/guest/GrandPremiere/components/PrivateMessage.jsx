@@ -290,6 +290,7 @@ export default function PrivateMessage({ data, slug }) {
                 <textarea
                   className="gp-message__input gp-message__input--text"
                   rows={2}
+                  style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   required
