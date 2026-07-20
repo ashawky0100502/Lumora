@@ -4,6 +4,7 @@ import { GuestCard, SectionHeading, GuestInput, GuestButton } from './GuestUI';
 import Reveal from './Reveal';
 import ReactionTray from './Reactions';
 import EmojiPickerButton from './EmojiPickerButton';
+import useAutoGrowTextarea from './useAutoGrowTextarea';
 import {
   getGuestName,
   setGuestName,
@@ -24,6 +25,8 @@ export default function ChatBlock({ theme, slug, lang, t, coupleNames }) {
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState('');
   const listRef = useRef(null);
+  const textareaRef = useRef(null);
+  const adjustTextareaHeight = useAutoGrowTextarea();
 
   useEffect(() => {
     if (!nameKnown) return undefined;
@@ -48,6 +51,10 @@ export default function ChatBlock({ theme, slug, lang, t, coupleNames }) {
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [thread]);
+
+  useEffect(() => {
+    adjustTextareaHeight(textareaRef.current);
+  }, [text, adjustTextareaHeight]);
 
   async function handleReact(messageId, emoji) {
     if (!messageId) return; // optimistic messages before the next refresh don't have a real id yet
@@ -169,12 +176,15 @@ export default function ChatBlock({ theme, slug, lang, t, coupleNames }) {
                 <EmojiPickerButton theme={theme} onPick={(e) => setText((prev) => prev + e)} />
                 <div className="min-w-0 flex-1">
                   <GuestInput
+                    ref={textareaRef}
                     theme={theme}
+                    as="textarea"
                     placeholder={t.placeholder}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    className="w-full"
-                    style={{ minWidth: 0 }}
+                    className="w-full resize-none"
+                    style={{ minWidth: 0, minHeight: '3rem', overflow: 'hidden', lineHeight: 1.5 }}
+                    onInput={(e) => adjustTextareaHeight(e.currentTarget)}
                   />
                 </div>
                 <GuestButton theme={theme} type="submit" disabled={busy} style={{ padding: '10px 18px', flexShrink: 0, whiteSpace: 'nowrap' }}>

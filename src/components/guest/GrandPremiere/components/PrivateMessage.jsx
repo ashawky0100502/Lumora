@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { guestCopy } from '../../../../lib/guestCopy';
 import {
   getGuestName,
@@ -9,6 +9,7 @@ import {
 } from '../../../../lib/guestApi';
 import { timeAgo } from '../../../../lib/guestFormat';
 import useScrollReveal from '../hooks/useScrollReveal';
+import useAutoGrowTextarea from '../../shared/useAutoGrowTextarea';
 
 /**
  * GRAND PREMIERE — Private Message Experience (Phase 14).
@@ -162,6 +163,8 @@ export default function PrivateMessage({ data, slug }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const textareaRef = useRef(null);
+  const adjustTextareaHeight = useAutoGrowTextarea();
 
   const [frameRef, frameVisible] = useScrollReveal();
 
@@ -219,6 +222,10 @@ export default function PrivateMessage({ data, slug }) {
       setBusy(false);
     }
   }
+
+  useEffect(() => {
+    adjustTextareaHeight(textareaRef.current);
+  }, [text, adjustTextareaHeight]);
 
   return (
     <section
@@ -288,11 +295,15 @@ export default function PrivateMessage({ data, slug }) {
               <label className="gp-message__field">
                 <span className="gp-message__field-label">{t.placeholder}</span>
                 <textarea
+                  ref={textareaRef}
                   className="gp-message__input gp-message__input--text"
                   rows={2}
                   style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    setText(e.target.value);
+                  }}
+                  onInput={(e) => adjustTextareaHeight(e.currentTarget)}
                   required
                 />
               </label>

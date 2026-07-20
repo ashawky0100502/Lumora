@@ -3997,7 +3997,7 @@
 .gp-message {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
   padding: clamp(6rem, 15vw, 9rem) clamp(1.5rem, 6vw, 6rem);
   background: linear-gradient(180deg, var(--gp-ink-2) 0%, #0a0808 45%, #050405 100%);
   display: flex;
@@ -4157,6 +4157,10 @@
   box-sizing: border-box;
   display: block;
   align-self: stretch;
+  /* Allow the textarea to grow, but cap at a comfortable viewport-relative height */
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .gp-message__input::placeholder {

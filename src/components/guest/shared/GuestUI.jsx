@@ -1,3 +1,5 @@
+import { forwardRef } from 'react';
+
 function CardOrnament({ theme }) {
   const rgb = theme.accentRgb;
 
@@ -125,11 +127,12 @@ export function SectionHeading({ theme, kicker, title }) {
   );
 }
 
-export function GuestInput({ theme, as = 'input', className = '', style, ...props }) {
+export const GuestInput = forwardRef(function GuestInput({ theme, as = 'input', className = '', style, ...props }, ref) {
   const Comp = as;
   const inputRadius = theme.ornament === 'brackets' || theme.ornament === 'seal' ? '4px' : '12px';
   return (
     <Comp
+      ref={ref}
       className={`w-full border px-4 py-3 text-[0.9rem] outline-none transition-colors duration-300 ${className}`}
       style={{
         borderRadius: inputRadius,
@@ -142,7 +145,7 @@ export function GuestInput({ theme, as = 'input', className = '', style, ...prop
       {...props}
     />
   );
-}
+});
 
 export function GuestButton({ theme, children, className = '', style, ...props }) {
   const buttonRadius = theme.ornament === 'brackets' || theme.ornament === 'seal' ? '4px' : '9999px';
