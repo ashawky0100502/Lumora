@@ -13,7 +13,6 @@
 import { supabaseClient } from './supabaseClient';
 import { cacheGet, cacheSet, cacheInvalidate } from './perfCache';
 import { normalizeInvitationData } from './invitationDataAdapter';
-import { mergeCommentFeatures } from './commentFeatures';
 
 export async function fetchInvitationBySlug(slug) {
   const { data, error } = await supabaseClient
@@ -131,7 +130,7 @@ export async function loadComments(slug, { before } = {}) {
 
   let query = supabaseClient
     .from('comments')
-    .select('id,name,text,created_at,reply,replied_at,reactions,pinned_at,thank_you')
+    .select('id,name,text,created_at,reply,replied_at,reactions')
     .eq('slug', slug)
     .order('created_at', { ascending: false })
     .limit(COMMENTS_PAGE_SIZE + 1);
@@ -145,7 +144,7 @@ export async function loadComments(slug, { before } = {}) {
   const hasMore = rows.length > COMMENTS_PAGE_SIZE;
   const items = hasMore ? rows.slice(0, COMMENTS_PAGE_SIZE) : rows;
   const result = {
-    items: mergeCommentFeatures(items),
+    items,
     hasMore,
     nextBefore: items.length ? items[items.length - 1].created_at : null,
   };
