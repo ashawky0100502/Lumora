@@ -12,9 +12,8 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [savingPin, setSavingPin] = useState(false);
-  const [thankYouOpen, setThankYouOpen] = useState(false);
-  const [thankYouText, setThankYouText] = useState(comment.thank_you || '');
   const [savingThankYou, setSavingThankYou] = useState(false);
+  const [showThankYouToast, setShowThankYouToast] = useState(false);
 
   async function handleSend() {
     if (!text.trim()) return;
@@ -54,12 +53,14 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
   }
 
   async function handleSaveThankYou() {
-    if (!comment.id || savingThankYou) return;
+    if (!comment.id || savingThankYou || comment.thank_you) return;
     setSavingThankYou(true);
     try {
-      await saveCommentThankYou(slug, code, comment.id, thankYouText);
-      onThankYouSaved(comment.id, thankYouText.trim() || null);
-      setThankYouOpen(false);
+      const defaultThankYou = 'Thank you for celebrating this unforgettable day with us. Your kind words truly mean the world to us. We are so grateful to have you as part of our special day. ❤️';
+      await saveCommentThankYou(slug, code, comment.id, defaultThankYou);
+      onThankYouSaved(comment.id, defaultThankYou);
+      setShowThankYouToast(true);
+      window.setTimeout(() => setShowThankYouToast(false), 1400);
     } catch (err) {
       console.warn('save_comment_thank_you failed:', err?.message || err);
     } finally {
@@ -96,14 +97,12 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
             </button>
             <button
               type="button"
-              onClick={() => {
-                setThankYouText(comment.thank_you || '');
-                setThankYouOpen(true);
-              }}
-              className="rounded-full px-3 py-1.5 text-[0.72rem] transition-opacity"
+              onClick={handleSaveThankYou}
+              disabled={savingThankYou || Boolean(comment.thank_you)}
+              className="min-w-[5.5rem] rounded-full px-3 py-1.5 text-[0.72rem] transition-all duration-300 disabled:opacity-70"
               style={{ background: `rgba(${theme.accentRgb},0.12)`, color: comment.thank_you ? theme.accent : theme.inkSoft, fontFamily: theme.uiFont }}
             >
-              {comment.thank_you ? '✏️ Edit Thank You' : '❤️ Thank'}
+              {savingThankYou ? 'Sending…' : comment.thank_you ? '✓ Thanked' : '❤️ Thank'}
             </button>
           </div>
 
@@ -134,46 +133,15 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
       </div>
 
       <AnimatePresence>
-        {thankYouOpen && (
+        {showThankYouToast && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
-            onClick={() => setThankYouOpen(false)}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="pointer-events-none fixed bottom-4 right-4 z-[60] rounded-full border px-4 py-2 text-[0.78rem] shadow-xl"
+            style={{ background: theme.surface, borderColor: theme.surfaceBorder, color: theme.accent, fontFamily: theme.uiFont }}
           >
-            <motion.div
-              initial={{ y: 14, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 12, opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.22 }}
-              className="w-full max-w-md rounded-[24px] border px-5 py-5 shadow-2xl"
-              style={{ background: theme.surface, borderColor: theme.surfaceBorder }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-[0.78rem] uppercase tracking-[0.25em]" style={{ color: theme.accent, fontFamily: theme.uiFont }}>
-                Thank You Message
-              </div>
-              <h3 className="mt-2 text-[1.05rem]" style={{ color: theme.ink, fontFamily: theme.displayFont }}>
-                Write a heartfelt note for this guest
-              </h3>
-              <textarea
-                rows={5}
-                value={thankYouText}
-                onChange={(e) => setThankYouText(e.target.value)}
-                placeholder="A personal thank-you message for their kindness..."
-                className="mt-4 w-full rounded-2xl border px-3 py-3 text-[0.9rem] outline-none"
-                style={{ borderColor: theme.surfaceBorder, background: theme.surfaceAlt, color: theme.ink, fontFamily: theme.uiFont, resize: 'none' }}
-              />
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <button type="button" onClick={() => setThankYouOpen(false)} className="rounded-full px-3 py-2 text-[0.8rem]" style={{ color: theme.inkSoft, fontFamily: theme.uiFont }}>
-                  Cancel
-                </button>
-                <button type="button" onClick={handleSaveThankYou} disabled={savingThankYou} className="rounded-full px-4 py-2 text-[0.8rem]" style={{ background: `linear-gradient(120deg, ${theme.accent}, ${theme.accentSoft})`, color: theme.id === 'velvet' || theme.id === 'midnight' ? '#1a1206' : '#fff', fontFamily: theme.uiFont }}>
-                  {savingThankYou ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            </motion.div>
+            ❤️ Thank-you message sent.
           </motion.div>
         )}
       </AnimatePresence>
