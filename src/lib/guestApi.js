@@ -131,7 +131,7 @@ export async function loadComments(slug, { before } = {}) {
 
   let query = supabaseClient
     .from('comments')
-    .select('id,name,text,created_at,reply,replied_at,reactions')
+    .select('id,name,text,created_at,reply,replied_at,reactions,pinned_at,thank_you')
     .eq('slug', slug)
     .order('created_at', { ascending: false })
     .limit(COMMENTS_PAGE_SIZE + 1);

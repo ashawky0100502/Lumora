@@ -5,7 +5,7 @@ import ReactionTray from '../../guest/shared/Reactions';
 import EmojiPickerButton from '../../guest/shared/EmojiPickerButton';
 import { initialsOf, timeAgo } from '../../../lib/guestFormat';
 import { pinComment, replyToComment, saveCommentThankYou, toggleCoupleCommentReaction } from '../../../lib/coupleApi';
-import { orderGuestbookComments, setCommentFeatureOverride } from '../../../lib/commentFeatures';
+import { orderGuestbookComments, toggleCommentPin } from '../../../lib/commentFeatures';
 
 function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted, onPinned, onThankYouSaved }) {
   const [replying, setReplying] = useState(false);
@@ -93,7 +93,7 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
               className="rounded-full px-3 py-1.5 text-[0.72rem] transition-opacity disabled:opacity-60"
               style={{ background: `rgba(${theme.accentRgb},0.12)`, color: comment.pinned_at ? theme.accent : theme.inkSoft, fontFamily: theme.uiFont }}
             >
-              {comment.pinned_at ? '📌 Pinned' : '📌 Pin'}
+              {comment.pinned_at ? '📌 Unpin' : '📌 Pin'}
             </button>
             <button
               type="button"
@@ -165,17 +165,10 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
 
   function handlePinned(id) {
     const pinnedAt = new Date().toISOString();
-    setCommentFeatureOverride(id, { pinned_at: pinnedAt });
-    (comments || []).forEach((comment) => {
-      if (comment.id && comment.id !== id) {
-        setCommentFeatureOverride(comment.id, { pinned_at: null });
-      }
-    });
-    onCommentsChange((prev) => (prev || []).map((c) => ({ ...c, pinned_at: c.id === id ? pinnedAt : null })));
+    onCommentsChange((prev) => toggleCommentPin(prev || [], id, pinnedAt));
   }
 
   function handleThankYouSaved(id, thankYou) {
-    setCommentFeatureOverride(id, { thank_you: thankYou });
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, thank_you: thankYou } : c)));
   }
 

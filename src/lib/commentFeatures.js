@@ -58,6 +58,46 @@ export function setCommentFeatureOverride(commentId, updates) {
   return next[commentId];
 }
 
+export function toggleCommentPin(comments = [], commentId, pinnedAt = null) {
+  if (!commentId) return (comments || []).map((comment) => ({ ...comment, pinned_at: null }));
+
+  const normalizedComments = (comments || []).map((comment) => ({ ...comment }));
+  const currentPinned = normalizedComments.find((comment) => comment.id === commentId);
+  const isCurrentlyPinned = Boolean(currentPinned?.pinned_at || getCommentFeatureOverrides(commentId).pinned_at);
+
+  const nextPinnedAt = isCurrentlyPinned ? null : (pinnedAt || new Date().toISOString());
+  const overrides = readFeatureOverrides();
+  const nextOverrides = {};
+
+  normalizedComments.forEach((comment) => {
+    const isSelected = comment.id === commentId;
+    if (isSelected) {
+      const nextCommentOverrides = {
+        ...(overrides[comment.id] || {}),
+        pinned_at: nextPinnedAt,
+      };
+      if (!nextPinnedAt) {
+        delete nextCommentOverrides.pinned_at;
+      }
+      nextOverrides[comment.id] = nextCommentOverrides;
+      return;
+    }
+
+    const nextCommentOverrides = { ...(overrides[comment.id] || {}) };
+    delete nextCommentOverrides.pinned_at;
+    nextOverrides[comment.id] = nextCommentOverrides;
+  });
+
+  writeFeatureOverrides(nextOverrides);
+
+  return normalizedComments.map((comment) => {
+    if (comment.id === commentId) {
+      return { ...comment, pinned_at: nextPinnedAt };
+    }
+    return { ...comment, pinned_at: null };
+  });
+}
+
 export function orderGuestbookComments(comments = []) {
   const merged = mergeCommentFeatures(comments);
   const sorted = [...merged].sort((a, b) => {
