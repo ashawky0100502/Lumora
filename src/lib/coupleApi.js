@@ -98,6 +98,25 @@ export async function replyToComment(slug, code, commentId, reply) {
   if (error) throw error;
 }
 
+export async function pinComment(slug, code, commentId) {
+  const { error } = await supabaseClient.rpc('pin_comment', {
+    p_slug: slug,
+    p_code: code,
+    p_comment_id: commentId,
+  });
+  if (error) throw error;
+}
+
+export async function saveCommentThankYou(slug, code, commentId, thankYou) {
+  const { error } = await supabaseClient.rpc('save_comment_thank_you', {
+    p_slug: slug,
+    p_code: code,
+    p_comment_id: commentId,
+    p_thank_you: thankYou,
+  });
+  if (error) throw error;
+}
+
 // ---- Reactions -----------------------------------------------------------
 
 export async function toggleCoupleMessageReaction(slug, code, guestToken, messageId, emoji) {

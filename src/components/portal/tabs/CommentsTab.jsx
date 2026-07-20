@@ -4,12 +4,17 @@ import { GuestCard, GuestInput, GuestButton } from '../../guest/shared/GuestUI';
 import ReactionTray from '../../guest/shared/Reactions';
 import EmojiPickerButton from '../../guest/shared/EmojiPickerButton';
 import { initialsOf, timeAgo } from '../../../lib/guestFormat';
-import { replyToComment, toggleCoupleCommentReaction } from '../../../lib/coupleApi';
+import { pinComment, replyToComment, saveCommentThankYou, toggleCoupleCommentReaction } from '../../../lib/coupleApi';
+import { orderGuestbookComments } from '../../../lib/commentFeatures';
 
-function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted }) {
+function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted, onPinned, onThankYouSaved }) {
   const [replying, setReplying] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [savingPin, setSavingPin] = useState(false);
+  const [thankYouOpen, setThankYouOpen] = useState(false);
+  const [thankYouText, setThankYouText] = useState(comment.thank_you || '');
+  const [savingThankYou, setSavingThankYou] = useState(false);
 
   async function handleSend() {
     if (!text.trim()) return;
@@ -35,6 +40,33 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted 
     }
   }
 
+  async function handlePin() {
+    if (!comment.id || savingPin) return;
+    setSavingPin(true);
+    try {
+      await pinComment(slug, code, comment.id);
+      onPinned(comment.id);
+    } catch (err) {
+      console.warn('pin_comment failed:', err?.message || err);
+    } finally {
+      setSavingPin(false);
+    }
+  }
+
+  async function handleSaveThankYou() {
+    if (!comment.id || savingThankYou) return;
+    setSavingThankYou(true);
+    try {
+      await saveCommentThankYou(slug, code, comment.id, thankYouText);
+      onThankYouSaved(comment.id, thankYouText.trim() || null);
+      setThankYouOpen(false);
+    } catch (err) {
+      console.warn('save_comment_thank_you failed:', err?.message || err);
+    } finally {
+      setSavingThankYou(false);
+    }
+  }
+
   return (
     <GuestCard theme={theme} className="!p-5">
       <div className="flex items-start gap-3">
@@ -51,7 +83,29 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted 
           </div>
           <div className="mt-0.5 text-[0.68rem]" style={{ color: theme.inkSoft }}>{timeAgo(comment.created_at, lang)}</div>
 
-          <ReactionTray theme={theme} reactions={comment.reactions} viewerKey="couple" onToggle={handleReact} />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <ReactionTray theme={theme} reactions={comment.reactions} viewerKey="couple" onToggle={handleReact} />
+            <button
+              type="button"
+              onClick={handlePin}
+              disabled={savingPin}
+              className="rounded-full px-3 py-1.5 text-[0.72rem] transition-opacity disabled:opacity-60"
+              style={{ background: `rgba(${theme.accentRgb},0.12)`, color: comment.pinned_at ? theme.accent : theme.inkSoft, fontFamily: theme.uiFont }}
+            >
+              {comment.pinned_at ? '📌 Pinned' : '📌 Pin'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setThankYouText(comment.thank_you || '');
+                setThankYouOpen(true);
+              }}
+              className="rounded-full px-3 py-1.5 text-[0.72rem] transition-opacity"
+              style={{ background: `rgba(${theme.accentRgb},0.12)`, color: comment.thank_you ? theme.accent : theme.inkSoft, fontFamily: theme.uiFont }}
+            >
+              {comment.thank_you ? '✏️ Edit Thank You' : '❤️ Thank'}
+            </button>
+          </div>
 
           {comment.reply ? (
             <div className="mt-2.5 rounded-lg border-r-2 px-3 py-2 text-[0.82rem] rtl:border-l-2 rtl:border-r-0" style={{ borderColor: theme.accent, background: `rgba(${theme.accentRgb},0.08)`, color: theme.ink }}>
@@ -78,6 +132,51 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted 
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {thankYouOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
+            onClick={() => setThankYouOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 14, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 12, opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.22 }}
+              className="w-full max-w-md rounded-[24px] border px-5 py-5 shadow-2xl"
+              style={{ background: theme.surface, borderColor: theme.surfaceBorder }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-[0.78rem] uppercase tracking-[0.25em]" style={{ color: theme.accent, fontFamily: theme.uiFont }}>
+                Thank You Message
+              </div>
+              <h3 className="mt-2 text-[1.05rem]" style={{ color: theme.ink, fontFamily: theme.displayFont }}>
+                Write a heartfelt note for this guest
+              </h3>
+              <textarea
+                rows={5}
+                value={thankYouText}
+                onChange={(e) => setThankYouText(e.target.value)}
+                placeholder="A personal thank-you message for their kindness..."
+                className="mt-4 w-full rounded-2xl border px-3 py-3 text-[0.9rem] outline-none"
+                style={{ borderColor: theme.surfaceBorder, background: theme.surfaceAlt, color: theme.ink, fontFamily: theme.uiFont, resize: 'none' }}
+              />
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <button type="button" onClick={() => setThankYouOpen(false)} className="rounded-full px-3 py-2 text-[0.8rem]" style={{ color: theme.inkSoft, fontFamily: theme.uiFont }}>
+                  Cancel
+                </button>
+                <button type="button" onClick={handleSaveThankYou} disabled={savingThankYou} className="rounded-full px-4 py-2 text-[0.8rem]" style={{ background: `linear-gradient(120deg, ${theme.accent}, ${theme.accentSoft})`, color: theme.id === 'velvet' || theme.id === 'midnight' ? '#1a1206' : '#fff', fontFamily: theme.uiFont }}>
+                  {savingThankYou ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </GuestCard>
   );
 }
@@ -96,6 +195,14 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, reactions } : c)));
   }
 
+  function handlePinned(id) {
+    onCommentsChange((prev) => (prev || []).map((c) => ({ ...c, pinned_at: c.id === id ? new Date().toISOString() : null })));
+  }
+
+  function handleThankYouSaved(id, thankYou) {
+    onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, thank_you: thankYou } : c)));
+  }
+
   // Measure and update container height whenever page changes
   useEffect(() => {
     if (containerRef.current) {
@@ -107,7 +214,7 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
   // Group comments into parent comments with their replies
   // A comment is a "parent" if it appears in the original flat list
   // The "reply" field on each comment indicates the couple's response
-  const rootComments = comments || [];
+  const rootComments = orderGuestbookComments(comments || []);
   const totalRootComments = rootComments.length;
   const totalPages = Math.ceil(totalRootComments / commentsPerPage) || 1;
   const startIdx = currentPage * commentsPerPage;
@@ -155,7 +262,18 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
                 >
                   {visible.map((c) => (
                     <motion.div key={c.id ?? c.created_at} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-                      <CommentRow theme={theme} t={t} lang={lang} slug={slug} code={code} comment={c} onReplied={handleReplied} onReacted={handleReacted} />
+                      <CommentRow
+                        theme={theme}
+                        t={t}
+                        lang={lang}
+                        slug={slug}
+                        code={code}
+                        comment={c}
+                        onReplied={handleReplied}
+                        onReacted={handleReacted}
+                        onPinned={handlePinned}
+                        onThankYouSaved={handleThankYouSaved}
+                      />
                     </motion.div>
                   ))}
                 </motion.div>

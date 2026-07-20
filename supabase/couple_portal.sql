@@ -66,6 +66,8 @@ update messages set guest_token = coalesce(guest_token, id::text) where guest_to
 
 alter table comments add column if not exists reply text;
 alter table comments add column if not exists replied_at timestamptz;
+alter table comments add column if not exists pinned_at timestamptz;
+alter table comments add column if not exists thank_you text;
 
 -- ---------------------------------------------------------------------------
 -- 3) RLS — نقفل القراءة المباشرة على اللي المفروض يبقى خاص، ونسيب اللي
@@ -328,6 +330,39 @@ begin
 end;
 $$;
 grant execute on function reply_to_comment(text, text, uuid, text) to anon, authenticated;
+
+create or replace function pin_comment(p_slug text, p_code text, p_comment_id uuid)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if not couple_is_authorized(p_slug, p_code) then
+    raise exception 'unauthorized';
+  end if;
+  update comments
+    set pinned_at = null
+    where slug = p_slug and id <> p_comment_id;
+  update comments
+    set pinned_at = now()
+    where id = p_comment_id and slug = p_slug;
+end;
+$$;
+grant execute on function pin_comment(text, text, uuid) to anon, authenticated;
+
+create or replace function save_comment_thank_you(p_slug text, p_code text, p_comment_id uuid, p_thank_you text)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if not couple_is_authorized(p_slug, p_code) then
+    raise exception 'unauthorized';
+  end if;
+  update comments
+    set thank_you = nullif(trim(coalesce(p_thank_you, '')), '')
+    where id = p_comment_id and slug = p_slug;
+end;
+$$;
+grant execute on function save_comment_thank_you(text, text, uuid, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 5.5) داشبورد الأدمن (LUMORA) — بيجيب RSVPs كل الدعوات اللي هو عملها،

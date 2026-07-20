@@ -6,6 +6,7 @@ import ReactionTray from './Reactions';
 import EmojiPickerButton from './EmojiPickerButton';
 import { loadComments, submitComment, toggleCommentReaction, getGuestToken } from '../../../lib/guestApi';
 import { initialsOf, timeAgo } from '../../../lib/guestFormat';
+import { orderGuestbookComments } from '../../../lib/commentFeatures';
 
 export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
   const [comments, setComments] = useState(null);
@@ -15,6 +16,7 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [expandedThanks, setExpandedThanks] = useState({});
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
   }
 
   const commentsPerPage = 3;
-  const rootComments = comments || [];
+  const rootComments = orderGuestbookComments(comments || []);
   const totalPages = Math.ceil(rootComments.length / commentsPerPage) || 1;
   const startIdx = currentPage * commentsPerPage;
   const endIdx = startIdx + commentsPerPage;
@@ -155,6 +157,12 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
                         {initialsOf(c.name)}
                       </div>
                       <div className="min-w-0 flex-1">
+                        {c.pinned_at && (
+                          <div className="mb-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.68rem]" style={{ background: `rgba(${theme.accentRgb},0.1)`, color: theme.accent, fontFamily: theme.uiFont }}>
+                            <span>📌</span>
+                            <span>Pinned by the Couple</span>
+                          </div>
+                        )}
                         <div className="text-[0.9rem] leading-relaxed" style={{ color: theme.ink, fontFamily: theme.uiFont }}>
                           <span className="mr-1.5 font-semibold" style={{ color: theme.accent }}>{c.name}</span>
                           {c.text}
@@ -167,6 +175,33 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
                             viewerKey={getGuestToken(slug)}
                             onToggle={(emoji) => handleReact(c.id, emoji)}
                           />
+                        )}
+                        {c.thank_you && (
+                          <div className="mt-2.5">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedThanks((prev) => ({ ...prev, [c.id]: !prev[c.id] }))}
+                              className="rounded-full px-3 py-1.5 text-[0.72rem] transition-opacity"
+                              style={{ background: `rgba(${theme.accentRgb},0.1)`, color: theme.accent, fontFamily: theme.uiFont }}
+                            >
+                              ❤️ {expandedThanks[c.id] ? 'Hide thank-you' : 'A thank-you message from the couple'}
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {expandedThanks[c.id] && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.24, ease: 'easeInOut' }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="mt-2 rounded-2xl border px-3 py-2.5 text-[0.82rem]" style={{ borderColor: theme.surfaceBorder, background: `rgba(${theme.accentRgb},0.08)`, color: theme.ink }}>
+                                    {c.thank_you}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         )}
                         {c.reply && (
                           <div
