@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { orderGuestbookComments, setCommentFeatureOverride, toggleCommentPin } from './commentFeatures.js';
+import { mergeCommentFeatures, orderGuestbookComments, setCommentFeatureOverride, toggleCommentPin } from './commentFeatures.js';
 
 const storage = {};
 Object.defineProperty(globalThis, 'localStorage', {
@@ -56,4 +56,20 @@ test('toggles pin state and keeps one pinned comment at a time', () => {
   const pinned = toggleCommentPin(comments, 'two', '2024-01-04T00:00:00.000Z');
   assert.equal(pinned.find((comment) => comment.id === 'one').pinned_at, null);
   assert.equal(pinned.find((comment) => comment.id === 'two').pinned_at, '2024-01-04T00:00:00.000Z');
+});
+
+test('merges thank-you overrides into guest-facing comments', () => {
+  const comments = [{ id: 'one', created_at: '2024-01-01T00:00:00.000Z' }];
+  setCommentFeatureOverride('one', { thank_you: 'Thanks for coming!' });
+
+  const merged = mergeCommentFeatures(comments);
+  assert.equal(merged[0].thank_you, 'Thanks for coming!');
+});
+
+test('clears thank-you overrides when the couple removes the message', () => {
+  const comments = [{ id: 'one', created_at: '2024-01-01T00:00:00.000Z', thank_you: 'Thanks for coming!' }];
+  setCommentFeatureOverride('one', { thank_you: null });
+
+  const merged = mergeCommentFeatures(comments);
+  assert.equal(merged[0].thank_you, null);
 });

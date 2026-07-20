@@ -44,6 +44,20 @@ export function mergeCommentFeatures(comments = []) {
   });
 }
 
+export function setCommentThankYou(commentId, thankYou) {
+  if (!commentId) return null;
+  const overrides = readFeatureOverrides();
+  const next = {
+    ...overrides,
+    [commentId]: {
+      ...(overrides[commentId] || {}),
+      thank_you: thankYou || null,
+    },
+  };
+  writeFeatureOverrides(next);
+  return next[commentId];
+}
+
 export function setCommentFeatureOverride(commentId, updates) {
   if (!commentId) return null;
   const overrides = readFeatureOverrides();

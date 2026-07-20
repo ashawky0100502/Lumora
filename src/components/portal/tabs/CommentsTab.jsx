@@ -5,7 +5,7 @@ import ReactionTray from '../../guest/shared/Reactions';
 import EmojiPickerButton from '../../guest/shared/EmojiPickerButton';
 import { initialsOf, timeAgo } from '../../../lib/guestFormat';
 import { pinComment, replyToComment, saveCommentThankYou, toggleCoupleCommentReaction } from '../../../lib/coupleApi';
-import { orderGuestbookComments, toggleCommentPin } from '../../../lib/commentFeatures';
+import { orderGuestbookComments, setCommentThankYou, toggleCommentPin } from '../../../lib/commentFeatures';
 
 function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted, onPinned, onThankYouSaved }) {
   const [replying, setReplying] = useState(false);
@@ -167,6 +167,7 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
   }
 
   function handleThankYouSaved(id, thankYou) {
+    setCommentThankYou(id, thankYou);
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, thank_you: thankYou } : c)));
   }
 
