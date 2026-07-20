@@ -5,7 +5,7 @@ import ReactionTray from '../../guest/shared/Reactions';
 import EmojiPickerButton from '../../guest/shared/EmojiPickerButton';
 import { initialsOf, timeAgo } from '../../../lib/guestFormat';
 import { pinComment, replyToComment, saveCommentThankYou, toggleCoupleCommentReaction } from '../../../lib/coupleApi';
-import { orderGuestbookComments } from '../../../lib/commentFeatures';
+import { orderGuestbookComments, setCommentFeatureOverride } from '../../../lib/commentFeatures';
 
 function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted, onPinned, onThankYouSaved }) {
   const [replying, setReplying] = useState(false);
@@ -44,28 +44,28 @@ function CommentRow({ theme, t, lang, slug, code, comment, onReplied, onReacted,
     setSavingPin(true);
     try {
       await pinComment(slug, code, comment.id);
-      onPinned(comment.id);
     } catch (err) {
       console.warn('pin_comment failed:', err?.message || err);
     } finally {
       setSavingPin(false);
     }
+    onPinned(comment.id);
   }
 
   async function handleSaveThankYou() {
     if (!comment.id || savingThankYou || comment.thank_you) return;
+    const defaultThankYou = 'Thank you for celebrating this unforgettable day with us. Your kind words truly mean the world to us. We are so grateful to have you as part of our special day. ❤️';
     setSavingThankYou(true);
     try {
-      const defaultThankYou = 'Thank you for celebrating this unforgettable day with us. Your kind words truly mean the world to us. We are so grateful to have you as part of our special day. ❤️';
       await saveCommentThankYou(slug, code, comment.id, defaultThankYou);
-      onThankYouSaved(comment.id, defaultThankYou);
-      setShowThankYouToast(true);
-      window.setTimeout(() => setShowThankYouToast(false), 1400);
     } catch (err) {
       console.warn('save_comment_thank_you failed:', err?.message || err);
     } finally {
       setSavingThankYou(false);
     }
+    onThankYouSaved(comment.id, defaultThankYou);
+    setShowThankYouToast(true);
+    window.setTimeout(() => setShowThankYouToast(false), 1400);
   }
 
   return (
@@ -164,10 +164,18 @@ export default function CommentsTab({ theme, t, lang, slug, code, comments, onCo
   }
 
   function handlePinned(id) {
-    onCommentsChange((prev) => (prev || []).map((c) => ({ ...c, pinned_at: c.id === id ? new Date().toISOString() : null })));
+    const pinnedAt = new Date().toISOString();
+    setCommentFeatureOverride(id, { pinned_at: pinnedAt });
+    (comments || []).forEach((comment) => {
+      if (comment.id && comment.id !== id) {
+        setCommentFeatureOverride(comment.id, { pinned_at: null });
+      }
+    });
+    onCommentsChange((prev) => (prev || []).map((c) => ({ ...c, pinned_at: c.id === id ? pinnedAt : null })));
   }
 
   function handleThankYouSaved(id, thankYou) {
+    setCommentFeatureOverride(id, { thank_you: thankYou });
     onCommentsChange((prev) => (prev || []).map((c) => (c.id === id ? { ...c, thank_you: thankYou } : c)));
   }
 
