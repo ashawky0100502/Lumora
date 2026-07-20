@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GuestCard, SectionHeading, GuestInput, GuestButton } from './GuestUI';
 import Reveal from './Reveal';
@@ -9,48 +9,37 @@ import { initialsOf, timeAgo } from '../../../lib/guestFormat';
 
 export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
   const [comments, setComments] = useState(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [cursor, setCursor] = useState(null);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [containerHeight, setContainerHeight] = useState('auto');
   const [name, setName] = useState('');
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const containerRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
     setComments(null);
+    setCurrentPage(0);
     loadComments(slug)
-      .then(({ items, hasMore: more, nextBefore }) => {
+      .then(({ items }) => {
         if (!alive) return;
         setComments(items);
-        setHasMore(more);
-        setCursor(nextBefore);
       })
       .catch(() => {
         if (!alive) return;
         setComments([]);
-        setHasMore(false);
       });
     return () => {
       alive = false;
     };
   }, [slug]);
 
-  async function handleLoadMore() {
-    if (!cursor || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const { items, hasMore: more, nextBefore } = await loadComments(slug, { before: cursor });
-      setComments((prev) => [...(prev || []), ...items]);
-      setHasMore(more);
-      setCursor(nextBefore);
-    } catch (err) {
-      console.error('[CommentsBlock] loadComments (more) failed:', err);
-    } finally {
-      setLoadingMore(false);
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerHeight(containerRef.current.scrollHeight);
     }
-  }
+  }, [currentPage, comments]);
 
   async function handleReact(commentId, emoji) {
     if (!commentId) return; // the just-posted optimistic comment doesn't have a real id yet
@@ -77,6 +66,23 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  const commentsPerPage = 3;
+  const rootComments = comments || [];
+  const totalPages = Math.ceil(rootComments.length / commentsPerPage) || 1;
+  const startIdx = currentPage * commentsPerPage;
+  const endIdx = startIdx + commentsPerPage;
+  const visibleComments = rootComments.slice(startIdx, endIdx);
+  const isFirstPage = currentPage === 0;
+  const isLastPage = currentPage >= totalPages - 1;
+
+  function handlePrevious() {
+    if (!isFirstPage) setCurrentPage((prev) => prev - 1);
+  }
+
+  function handleNext() {
+    if (!isLastPage) setCurrentPage((prev) => prev + 1);
   }
 
   return (
@@ -118,59 +124,91 @@ export default function CommentsBlock({ theme, slug, lang, t, coupleNames }) {
               {t.empty}
             </div>
           )}
-          <AnimatePresence initial={false}>
-            {comments?.map((c, i) => (
-              <motion.div
-                key={c.created_at + i}
-                layout
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: theme.ease }}
-                className="flex items-start gap-3"
-              >
-                <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.7rem]"
-                  style={{ background: `rgba(${theme.accentRgb},0.16)`, color: theme.accent, fontFamily: theme.uiFont }}
+          <motion.div
+            animate={{ height: containerHeight }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div ref={containerRef} className="flex flex-col gap-4">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: theme.ease }}
+                  className="flex flex-col gap-4"
                 >
-                  {initialsOf(c.name)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[0.9rem] leading-relaxed" style={{ color: theme.ink, fontFamily: theme.uiFont }}>
-                    <span className="mr-1.5 font-semibold" style={{ color: theme.accent }}>{c.name}</span>
-                    {c.text}
-                  </div>
-                  <div className="mt-0.5 text-[0.68rem]" style={{ color: theme.inkSoft }}>{timeAgo(c.created_at, lang)}</div>
-                  {c.id && (
-                    <ReactionTray
-                      theme={theme}
-                      reactions={c.reactions}
-                      viewerKey={getGuestToken(slug)}
-                      onToggle={(emoji) => handleReact(c.id, emoji)}
-                    />
-                  )}
-                  {c.reply && (
-                    <div
-                      className="mt-2 rounded-lg border-r-2 px-3 py-2 text-[0.82rem]"
-                      style={{ borderColor: theme.accent, background: `rgba(${theme.accentRgb},0.08)`, color: theme.ink }}
+                  {visibleComments.map((c, i) => (
+                    <motion.div
+                      key={c.id ?? `${c.created_at}-${i}`}
+                      layout
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: theme.ease }}
+                      className="flex items-start gap-3"
                     >
-                      <b style={{ color: theme.accent }}>{coupleNames}: </b>
-                      {c.reply}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {hasMore && (
-            <button
-              type="button"
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="mx-auto mt-1 rounded-full px-5 py-2 text-[0.78rem] transition-opacity disabled:opacity-60"
-              style={{ background: `rgba(${theme.accentRgb},0.1)`, color: theme.accent, fontFamily: theme.uiFont }}
-            >
-              {loadingMore ? t.loading : t.loadMore || 'Show more'}
-            </button>
+                      <div
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.7rem]"
+                        style={{ background: `rgba(${theme.accentRgb},0.16)`, color: theme.accent, fontFamily: theme.uiFont }}
+                      >
+                        {initialsOf(c.name)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[0.9rem] leading-relaxed" style={{ color: theme.ink, fontFamily: theme.uiFont }}>
+                          <span className="mr-1.5 font-semibold" style={{ color: theme.accent }}>{c.name}</span>
+                          {c.text}
+                        </div>
+                        <div className="mt-0.5 text-[0.68rem]" style={{ color: theme.inkSoft }}>{timeAgo(c.created_at, lang)}</div>
+                        {c.id && (
+                          <ReactionTray
+                            theme={theme}
+                            reactions={c.reactions}
+                            viewerKey={getGuestToken(slug)}
+                            onToggle={(emoji) => handleReact(c.id, emoji)}
+                          />
+                        )}
+                        {c.reply && (
+                          <div
+                            className="mt-2 rounded-lg border-r-2 px-3 py-2 text-[0.82rem]"
+                            style={{ borderColor: theme.accent, background: `rgba(${theme.accentRgb},0.08)`, color: theme.ink }}
+                          >
+                            <b style={{ color: theme.accent }}>{coupleNames}: </b>
+                            {c.reply}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {totalPages > 1 && (
+            <div className="mt-1 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={isFirstPage}
+                className="rounded-full px-4 py-2 text-[0.78rem] transition-opacity disabled:opacity-60"
+                style={{ background: `rgba(${theme.accentRgb},0.1)`, color: isFirstPage ? theme.inkSoft : theme.accent, fontFamily: theme.uiFont }}
+              >
+                ← Previous
+              </button>
+              <span className="text-[0.75rem]" style={{ color: theme.inkSoft, fontFamily: theme.uiFont }}>
+                {currentPage + 1} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isLastPage}
+                className="rounded-full px-4 py-2 text-[0.78rem] transition-opacity disabled:opacity-60"
+                style={{ background: `rgba(${theme.accentRgb},0.1)`, color: isLastPage ? theme.inkSoft : theme.accent, fontFamily: theme.uiFont }}
+              >
+                Next →
+              </button>
+            </div>
           )}
         </div>
       </GuestCard>
